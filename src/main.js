@@ -37,6 +37,11 @@ let lat = 0, onPointerDownLat = 0;
 let targetLon = 180, targetLat = 0;
 let fov = 75, targetFov = 75;
 
+// Touch & Multi-Touch Pinch-to-Zoom Tracking
+const activePointers = new Map();
+let initialPinchDistance = 0;
+let pinchStartFov = 75;
+
 // Run initial system diagnostic
 runFullDiagnostic();
 
@@ -142,6 +147,11 @@ function initApp() {
           <button id="btn-book" class="btn-primary">
             <span>Book Visit</span>
           </button>
+
+          <button id="btn-mobile-menu" class="icon-btn mobile-only-btn" title="All Locations Drawer">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            <span class="dock-tooltip">All Locations</span>
+          </button>
         </div>
       </header>
 
@@ -187,6 +197,11 @@ function initApp() {
 
         <!-- Main Viewport Controls -->
         <div class="dock-controls">
+          <button id="btn-reset-view" class="icon-btn" title="Reset Camera View">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><polyline points="3 3 3 8 8 8"/></svg>
+            <span class="dock-tooltip">Reset View</span>
+          </button>
+
           <button id="btn-rotate" class="icon-btn" title="Toggle Auto-Rotation">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
             <span class="dock-tooltip">Auto Rotate</span>
@@ -215,6 +230,18 @@ function initApp() {
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
             <span class="dock-tooltip">Fullscreen</span>
           </button>
+
+          <div class="dock-divider mobile-only-divider"></div>
+
+          <button id="btn-mobile-locations" class="icon-btn mobile-only-btn" title="Open Locations Drawer">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            <span class="dock-tooltip">Locations</span>
+          </button>
+
+          <button id="btn-mobile-map" class="icon-btn mobile-only-btn" title="Toggle 2D Mini-Map">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+            <span class="dock-tooltip">Mini-Map</span>
+          </button>
         </div>
 
         <!-- Interactive 2D Minimap -->
@@ -236,6 +263,62 @@ function initApp() {
           </div>
         </div>
       </footer>
+    </div>
+
+    <!-- Mobile Location Selector Drawer (Bottom Sheet) -->
+    <div id="drawer-locations" class="drawer-backdrop">
+      <div class="drawer-sheet">
+        <div class="drawer-handle-bar">
+          <div class="drawer-pill"></div>
+        </div>
+        <div class="drawer-header">
+          <div class="drawer-title-wrap">
+            <h3 class="drawer-title">Campus & Hostel Locations</h3>
+            <span class="drawer-subtitle" id="drawer-subtitle">Select a destination to jump instantly</span>
+          </div>
+          <button class="modal-close drawer-close-btn" id="btn-close-drawer">&times;</button>
+        </div>
+        
+        <!-- Drawer Experience Switcher Tabs -->
+        <div class="drawer-switcher">
+          <button id="drawer-tab-campus" class="drawer-tab ${currentSection === 'campus' ? 'active' : ''}">
+            🏛️ Campus 360°
+          </button>
+          <button id="drawer-tab-hostel" class="drawer-tab ${currentSection === 'hostel' ? 'active' : ''}">
+            🏠 Hostel 360°
+          </button>
+        </div>
+
+        <div id="drawer-locations-list" class="drawer-body"></div>
+      </div>
+    </div>
+
+    <!-- Mobile Mini-Map Modal Overlay -->
+    <div id="modal-minimap" class="modal-backdrop">
+      <div class="modal-card minimap-modal-card">
+        <button class="modal-close" data-close="modal-minimap">&times;</button>
+        <div class="minimap-modal-header">
+          <h3 class="modal-title" id="mobile-minimap-section-tag">Hostel Layout</h3>
+          <span class="badge" id="mobile-minimap-level">GATE 0</span>
+        </div>
+        <p class="modal-subtitle">Interactive 2D spatial layout and real-time viewing orientation.</p>
+        
+        <div class="mobile-minimap-body">
+          <svg class="minimap-svg" viewBox="0 0 100 100">
+            <rect x="5" y="5" width="90" height="90" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" rx="4" />
+            <path d="M 5,35 L 95,35 M 5,65 L 95,65 M 40,5 L 40,95 M 70,5 L 70,95" stroke="rgba(255,255,255,0.1)" stroke-width="1" />
+            <text x="20" y="20" fill="rgba(255,255,255,0.3)" font-size="5" text-anchor="middle">GATE 1</text>
+            <text x="55" y="50" fill="rgba(0,240,255,0.5)" font-size="5" font-weight="bold" text-anchor="middle">GATE 2</text>
+            <text x="85" y="80" fill="rgba(255,255,255,0.3)" font-size="5" text-anchor="middle">COURTYARD</text>
+          </svg>
+          <div id="mobile-minimap-cone" class="minimap-cone"></div>
+          <div id="mobile-minimap-pin" class="minimap-pin"></div>
+        </div>
+
+        <button class="btn-primary" data-close="modal-minimap" style="width:100%; justify-content:center; margin-top:1rem;">
+          <span>Close Mini-Map</span>
+        </button>
+      </div>
     </div>
 
     <!-- Search Modal -->
@@ -399,6 +482,8 @@ function initApp() {
   updateAudioIcon();
   renderSceneQuickBar();
   renderSidePanel();
+  renderMobileDrawer();
+  renderMobileDrawer();
   initThreeViewer();
   setupEventListeners();
   loadScene(currentSceneId);
@@ -431,6 +516,12 @@ function initThreeViewer() {
 
   canvas.addEventListener('pointerdown', onPointerDown);
   window.addEventListener('resize', onWindowResize);
+  window.addEventListener('orientationchange', () => {
+    setTimeout(onWindowResize, 150);
+  });
+  document.addEventListener('fullscreenchange', () => {
+    setTimeout(onWindowResize, 150);
+  });
   canvas.addEventListener('wheel', onDocumentMouseWheel, { passive: false });
 
   animate();
@@ -451,6 +542,8 @@ function setExperienceSection(section) {
   // Update tabs UI
   document.getElementById('tab-campus')?.classList.toggle('active', section === 'campus');
   document.getElementById('tab-hostel')?.classList.toggle('active', section === 'hostel');
+  document.getElementById('drawer-tab-campus')?.classList.toggle('active', section === 'campus');
+  document.getElementById('drawer-tab-hostel')?.classList.toggle('active', section === 'hostel');
 
   // Update brand header
   const appMainTitle = document.getElementById('app-main-title');
@@ -460,6 +553,8 @@ function setExperienceSection(section) {
 
   renderSceneQuickBar();
   renderSidePanel();
+  renderMobileDrawer();
+  renderMobileDrawer();
 
   // Load appropriate scene for this section
   const targetScene = section === 'campus' ? lastVisitedCampusScene : lastVisitedHostelScene;
@@ -614,6 +709,133 @@ function renderSidePanel() {
 }
 
 /**
+ * Render mobile location drawer containing categorized location buttons
+ */
+function renderMobileDrawer() {
+  const container = document.getElementById('drawer-locations-list');
+  if (!container) return;
+
+  if (currentSection === 'hostel') {
+    container.innerHTML = `
+      <div class="drawer-group">
+        <h4 class="drawer-group-title">Gates & Perimeter</h4>
+        <div class="drawer-grid">
+          ${[
+            { code: 'CAN', name: 'Old Canteen & Main Campus Lane', scene: 'canteen', matches: ['way_to_canteen', 'canteen', 'way_to_main_campus', 'way_to_main_campus_2', 'main_campus_lane'] },
+            { code: '1YR', name: '1st Year Block & New Canteen', scene: 'way_to_first_year_block', matches: ['way_to_first_year_block', 'way_to_first_year_block_2', 'new_canteen', 'way_to_hod_office', 'hod_office_room', 'first_year_ladies_staff', 'first_year_1st_floor', 'first_year_2nd_floor', 'first_year_gents_staff_room', 'chemistry_lab', 'physics_lab', 'python_lab'] },
+            { code: 'MB', name: 'Main Academic & Admin Block', scene: 'main_block_0', matches: ['main_block_0', 'way_to_cse_lab', 'cse_lab_2', 'way_to_cse_hod_office', 'way_to_cse_hod_office_2', 'cse_hod_office', 'cse_lab', 'way_to_student_section_main_block', 'way_to_admin_block_1', 'way_to_admin_block_2', 'way_to_main_block_1', 'way_to_main_block_2', 'way_to_main_block_3', 'way_to_main_block_4', 'mb_1f_right', 'mb_1f_eee_rd', 'mb_1f_way_to_eee_hod_1', 'mb_1f_way_to_eee_hod_2', 'mb_1f_way_to_eee_hod_3', 'mb_1f_eee_staff', 'eee_hod_office', 'microcontroller_lab', 'analog_electronic_lab', 'mb_1f_mba_block', 'mb_1f_mba_hod_staff', 'mb_1f_way_to_eee_from_mba', 'mb_2f_left', 'mb_2f_left_corridor', 'mb_2f_mba_hod', 'mb_2f_mba_staff', 'mb_2f_right', 'mb_2f_ece_hod', 'mb_2f_embedded_lab', 'mb_2f_embedded_system_lab', 'mb_2f_way_to_ece_lab', 'mb_2f_ece_lab_left', 'mb_2f_ece_lab_1', 'mb_2f_ece_lab_2', 'mb_2f_ece_staff_1', 'mb_2f_ece_staff_2', 'mb_3f_left', 'mb_3f_hod', 'mb_3f_ise_hod', 'mb_3f_ise_staff', 'mb_3f_way_to_aiml_hod', 'mb_3f_aiml_hod', 'mb_3f_aiml_staff', 'mb_3f_way_to_cse_aiml', 'mb_3f_cse_aiml_hod', 'mb_3f_cse_aiml_staff'] },
+            { code: 'LIB', name: 'Central Library & Reading Halls', scene: 'way_to_central_library', matches: ['way_to_central_library', 'move_to_library', 'first_floor_library', 'second_floor_library'] },
+            { code: 'CG2', name: 'Campus 2nd Gate, Avenue & Parking', scene: 'campus_2nd_gate', matches: ['way_to_2nd_gate', 'way_to_2nd_gate_2', 'campus_2nd_gate', 'campus_parking'] },
+            { code: 'MECH', name: 'Mechanical Branch & Approach', scene: 'mechanical_branch', matches: ['way_to_mechanical', 'mechanical_branch', 'mechanical_engineering_branch', 'civil_lab', 'way_to_civil_block', 'civil_staff_room', 'mechanical_block', 'mechanical_staff_room', 'cad_lab', 'mechanical_hod_office', 'civil_hod_office', 'mechanical_machine_shop', 'mechanical_mmt_lab', 'civil_computer_lab'] },
+            { code: 'G0', name: 'Hostel Gate 0', scene: 'gate0', matches: ['gate0'] },
+            { code: 'AUD', name: 'Main Auditorium & Approach', scene: 'main_auditorium', matches: ['way_to_auditorium', 'way_to_auditorium_2', 'way_to_auditorium_3', 'main_auditorium'] },
+            { code: 'GRD', name: 'College Ground, Sports Room & Guru Bhavan', scene: 'college_ground', matches: ['way_to_ground', 'college_ground', 'sports_room', 'guru_bhavan_beside'] },
+            { code: 'G1', name: 'Hostel Gate 1', scene: 'gate1', matches: ['gate1'] },
+            { code: 'G2', name: 'Hostel Gate 2', scene: 'gate2', matches: ['gate2'] },
+            { code: 'GYM', name: 'Outer Open Gym', scene: 'outer_gym', matches: ['outer_gym'] }
+          ].map(item => `
+            <button class="drawer-loc-btn ${item.matches.includes(currentSceneId) ? 'active' : ''}" data-scene="${item.scene}">
+              <span class="drawer-badge">${item.code}</span>
+              <span class="drawer-loc-name">${item.name}</span>
+            </button>
+          `).join('')}
+        </div>
+      </div>
+
+      <div class="drawer-group">
+        <h4 class="drawer-group-title">Ground Level</h4>
+        <div class="drawer-grid">
+          ${[
+            { code: 'EXT', name: 'Main Courtyard', scene: 'exterior', matches: ['exterior'] },
+            { code: 'G', name: 'Ground Lobby', scene: 'lobby', matches: ['lobby'] },
+            { code: 'M', name: 'Hostel Mess', scene: 'mess', matches: ['mess'] },
+            { code: 'M2', name: 'Mess Veranda', scene: 'mess2', matches: ['mess2'] },
+            { code: 'WG', name: 'Way to Main Gym', scene: 'way_to_gym', matches: ['way_to_gym'] },
+            { code: 'MG', name: 'Main Gym', scene: 'main_gym', matches: ['main_gym'] }
+          ].map(item => `
+            <button class="drawer-loc-btn ${item.matches.includes(currentSceneId) ? 'active' : ''}" data-scene="${item.scene}">
+              <span class="drawer-badge">${item.code}</span>
+              <span class="drawer-loc-name">${item.name}</span>
+            </button>
+          `).join('')}
+        </div>
+      </div>
+
+      <div class="drawer-group">
+        <h4 class="drawer-group-title">Hostel Floors & Suites</h4>
+        <div class="drawer-grid">
+          ${[
+            { code: 'F1', name: 'Floor 1 Corridor', scene: 'floor1', matches: ['floor1'] },
+            { code: 'F2', name: 'Floor 2 Entrance', scene: 'floor2', matches: ['floor2', 'f2_entrance'] },
+            { code: '2C1', name: 'Floor 2 - Corridor 1', scene: 'f2_corridor1', matches: ['f2_corridor1'] },
+            { code: '2C2', name: 'Floor 2 - Corridor 2 (R211-212)', scene: 'f2_corridor2', matches: ['f2_corridor2'] },
+            { code: 'F3', name: 'Floor 3 Corridor', scene: 'floor3', matches: ['floor3'] },
+            { code: 'F4', name: 'Floor 4 Corridor', scene: 'floor4', matches: ['floor4'] },
+            { code: 'F5', name: 'Floor 5 Entrance', scene: 'f5_entrance', matches: ['f5_entrance', 'f5_corridor1', 'f5_corridor2', 'f5_corridor3'] },
+            { code: 'C7', name: 'Corridor 7 (Prayer Way)', scene: 'f5_corridor7', matches: ['f5_corridor7'] },
+            { code: 'C8', name: 'Corridor 8', scene: 'f5_corridor8', matches: ['f5_corridor8'] },
+            { code: 'GURU', name: 'Gurudwara Sahib', scene: 'f5_gurudwara', matches: ['f5_gurudwara'] },
+            { code: '525', name: 'Room 525 Deluxe Suite', scene: 'room_525', matches: ['room_525'] }
+          ].map(item => `
+            <button class="drawer-loc-btn ${item.matches.includes(currentSceneId) ? 'active' : ''}" data-scene="${item.scene}">
+              <span class="drawer-badge">${item.code}</span>
+              <span class="drawer-loc-name">${item.name}</span>
+            </button>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  } else {
+    // Campus Directory Drawer
+    container.innerHTML = `
+      <div class="drawer-group">
+        <h4 class="drawer-group-title">Campus Landmarks</h4>
+        <div class="drawer-grid">
+          ${[
+            { code: 'MG', name: 'College Main Gate', scene: 'campus_main_gate', matches: ['campus_main_gate'] },
+            { code: '2G', name: 'College 2nd Gate', scene: 'campus_second_gate', matches: ['campus_second_gate'] },
+            { code: 'MB', name: 'Main Academic Block', scene: 'campus_main_block', matches: ['campus_main_block'] },
+            { code: 'CAN', name: 'Central Canteen', scene: 'campus_canteen', matches: ['campus_canteen'] },
+            { code: 'AUD', name: 'University Auditorium', scene: 'campus_auditorium', matches: ['campus_auditorium'] },
+            { code: 'SPT', name: 'Campus Sports Room', scene: 'campus_sports_room', matches: ['campus_sports_room'] },
+            { code: 'GRD', name: 'College Ground', scene: 'campus_ground', matches: ['campus_ground'] }
+          ].map(item => `
+            <button class="drawer-loc-btn ${item.matches.includes(currentSceneId) ? 'active' : ''}" data-scene="${item.scene}">
+              <span class="drawer-badge campus">${item.code}</span>
+              <span class="drawer-loc-name">${item.name}</span>
+            </button>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+}
+
+function openDrawer() {
+  renderMobileDrawer();
+  const drawer = document.getElementById('drawer-locations');
+  if (drawer) {
+    drawer.classList.add('active');
+    document.body.classList.add('drawer-open');
+  }
+}
+
+function closeDrawer() {
+  const drawer = document.getElementById('drawer-locations');
+  if (drawer) {
+    drawer.classList.remove('active');
+    document.body.classList.remove('drawer-open');
+  }
+}
+
+function resetView() {
+  targetLon = 180;
+  targetLat = 0;
+  targetFov = 75;
+  showToast('Camera View Reset');
+}
+
+/**
  * High-Performance Asynchronous Texture Loader with Memory Caching
  * Omits mipmaps on equirectangular spheres to save 33% GPU memory and eliminate upload hitching.
  */
@@ -733,6 +955,7 @@ export function loadScene(sceneId) {
     document.getElementById('tab-hostel')?.classList.toggle('active', currentSection === 'hostel');
     renderSceneQuickBar();
     renderSidePanel();
+  renderMobileDrawer();
   }
 
   currentSceneId = sceneId;
@@ -760,6 +983,7 @@ export function loadScene(sceneId) {
     btn.classList.toggle('active', btn.dataset.scene === sceneId);
   });
   renderSidePanel();
+  renderMobileDrawer();
 
   // Update Directional D-Pad controls
   updateDPadControls(targetViewpoint);
@@ -980,28 +1204,62 @@ function updateHotspotsPosition() {
 // CAMERA CONTROLS & ANIMATION LOOP
 // ============================================================================
 function onPointerDown(event) {
-  if (event.isPrimary === false) return;
-  isUserInteracting = true;
-  onPointerDownMouseX = event.clientX;
-  onPointerDownMouseY = event.clientY;
-  onPointerDownLon = lon;
-  onPointerDownLat = lat;
+  activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+
+  if (activePointers.size === 1) {
+    isUserInteracting = true;
+    onPointerDownMouseX = event.clientX;
+    onPointerDownMouseY = event.clientY;
+    onPointerDownLon = lon;
+    onPointerDownLat = lat;
+  } else if (activePointers.size === 2) {
+    // 2 touches: start multi-touch pinch to zoom
+    isUserInteracting = false;
+    const pts = Array.from(activePointers.values());
+    initialPinchDistance = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+    pinchStartFov = targetFov;
+  }
 
   document.addEventListener('pointermove', onPointerMove);
   document.addEventListener('pointerup', onPointerUp);
+  document.addEventListener('pointercancel', onPointerUp);
 }
 
 function onPointerMove(event) {
-  if (event.isPrimary === false) return;
-  targetLon = (onPointerDownMouseX - event.clientX) * 0.22 + onPointerDownLon;
-  targetLat = (event.clientY - onPointerDownMouseY) * 0.22 + onPointerDownLat;
+  if (!activePointers.has(event.pointerId)) return;
+  activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+
+  if (activePointers.size === 1 && isUserInteracting) {
+    targetLon = (onPointerDownMouseX - event.clientX) * 0.22 + onPointerDownLon;
+    targetLat = (event.clientY - onPointerDownMouseY) * 0.22 + onPointerDownLat;
+  } else if (activePointers.size === 2 && initialPinchDistance > 10) {
+    const pts = Array.from(activePointers.values());
+    const currentDist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+    const distDiff = initialPinchDistance - currentDist;
+    // Pinch fingers closer -> zoom out (increase FOV)
+    // Spread fingers apart -> zoom in (decrease FOV)
+    targetFov = Math.max(35, Math.min(100, pinchStartFov + distDiff * 0.15));
+  }
 }
 
 function onPointerUp(event) {
-  if (event.isPrimary === false) return;
-  isUserInteracting = false;
-  document.removeEventListener('pointermove', onPointerMove);
-  document.removeEventListener('pointerup', onPointerUp);
+  activePointers.delete(event.pointerId);
+
+  if (activePointers.size === 1) {
+    // Return to single touch panning with remaining pointer
+    const remaining = Array.from(activePointers.values())[0];
+    onPointerDownMouseX = remaining.x;
+    onPointerDownMouseY = remaining.y;
+    onPointerDownLon = lon;
+    onPointerDownLat = lat;
+    isUserInteracting = true;
+  } else if (activePointers.size === 0) {
+    isUserInteracting = false;
+    initialPinchDistance = 0;
+    document.removeEventListener('pointermove', onPointerMove);
+    document.removeEventListener('pointerup', onPointerUp);
+    document.removeEventListener('pointercancel', onPointerUp);
+  }
 }
 
 function onDocumentMouseWheel(event) {
@@ -1010,9 +1268,11 @@ function onDocumentMouseWheel(event) {
 }
 
 function onWindowResize() {
+  if (!camera || !renderer) return;
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 }
 
 function animate() {
@@ -1059,6 +1319,8 @@ function updateCompassUI(angle) {
 
   const minimapCone = document.getElementById('minimap-cone');
   if (minimapCone) minimapCone.style.transform = `translate(-50%, -100%) rotate(${normAngle}deg)`;
+  const mobileMinimapCone = document.getElementById('mobile-minimap-cone');
+  if (mobileMinimapCone) mobileMinimapCone.style.transform = `translate(-50%, -100%) rotate(${normAngle}deg)`;
 }
 
 function updateMinimapPin() {
@@ -1066,23 +1328,29 @@ function updateMinimapPin() {
   const cone = document.getElementById('minimap-cone');
   const levelText = document.getElementById('minimap-level');
   const sectionTag = document.getElementById('minimap-section-tag');
+
+  const mobilePin = document.getElementById('mobile-minimap-pin');
+  const mobileCone = document.getElementById('mobile-minimap-cone');
+  const mobileLevelText = document.getElementById('mobile-minimap-level');
+  const mobileSectionTag = document.getElementById('mobile-minimap-section-tag');
   
   const viewpoint = getViewpoint(currentSceneId);
   if (!viewpoint) return;
 
   const pos = viewpoint.minimapPos;
-  if (pin && cone && pos) {
-    pin.style.top = pos.top;
-    pin.style.left = pos.left;
-    cone.style.top = pos.top;
-    cone.style.left = pos.left;
+  if (pos) {
+    if (pin) { pin.style.top = pos.top; pin.style.left = pos.left; }
+    if (cone) { cone.style.top = pos.top; cone.style.left = pos.left; }
+    if (mobilePin) { mobilePin.style.top = pos.top; mobilePin.style.left = pos.left; }
+    if (mobileCone) { mobileCone.style.top = pos.top; mobileCone.style.left = pos.left; }
   }
-  if (levelText) {
-    levelText.textContent = viewpoint.floorLabel || currentSceneId.toUpperCase();
-  }
-  if (sectionTag) {
-    sectionTag.textContent = currentSection === 'campus' ? 'Campus Layout' : 'Hostel Layout';
-  }
+  const label = viewpoint.floorLabel || currentSceneId.toUpperCase();
+  if (levelText) levelText.textContent = label;
+  if (mobileLevelText) mobileLevelText.textContent = label;
+
+  const sectionName = currentSection === 'campus' ? 'Campus Layout' : 'Hostel Layout';
+  if (sectionTag) sectionTag.textContent = sectionName;
+  if (mobileSectionTag) mobileSectionTag.textContent = sectionName;
 }
 
 // ============================================================================
@@ -1234,6 +1502,10 @@ function setupEventListeners() {
       if (e.target.closest('#modal-search')) {
         closeModal('modal-search');
       }
+      // If clicked inside mobile locations drawer, close it
+      if (e.target.closest('#drawer-locations')) {
+        closeDrawer();
+      }
     }
   });
 
@@ -1250,7 +1522,7 @@ function setupEventListeners() {
 
   // Directional D-Pad buttons: prefetch on hover & instant navigation / smooth turns
   document.querySelectorAll('.dpad-btn').forEach(btn => {
-    btn.addEventListener('pointerenter', (e) => {
+    const prefetchTarget = (e) => {
       const targetId = e.currentTarget.dataset.target;
       if (targetId) {
         const targetVp = getViewpoint(targetId);
@@ -1258,7 +1530,9 @@ function setupEventListeners() {
           getOrLoadTexture(targetVp.image);
         }
       }
-    });
+    };
+    btn.addEventListener('pointerenter', prefetchTarget);
+    btn.addEventListener('touchstart', prefetchTarget, { passive: true });
 
     btn.addEventListener('click', (e) => {
       const targetId = e.currentTarget.dataset.target;
@@ -1324,6 +1598,43 @@ function setupEventListeners() {
   document.getElementById('btn-book')?.addEventListener('click', () => showModal('modal-booking'));
   document.getElementById('btn-help')?.addEventListener('click', () => showModal('modal-help'));
 
+  // Camera & Mobile Toolbar controls
+  document.getElementById('btn-reset-view')?.addEventListener('click', resetView);
+  document.getElementById('btn-mobile-locations')?.addEventListener('click', openDrawer);
+  document.getElementById('btn-mobile-menu')?.addEventListener('click', openDrawer);
+  document.getElementById('btn-close-drawer')?.addEventListener('click', closeDrawer);
+  document.getElementById('btn-mobile-map')?.addEventListener('click', () => showModal('modal-minimap'));
+
+  // Drawer experience switchers
+  document.getElementById('drawer-tab-campus')?.addEventListener('click', () => {
+    setExperienceSection('campus');
+  });
+  document.getElementById('drawer-tab-hostel')?.addEventListener('click', () => {
+    setExperienceSection('hostel');
+  });
+
+  // Drawer backdrop dismissal
+  document.getElementById('drawer-locations')?.addEventListener('click', (e) => {
+    if (e.target.id === 'drawer-locations') {
+      closeDrawer();
+    }
+  });
+
+  // Drawer touch swipe-down to dismiss
+  const drawerSheet = document.querySelector('.drawer-sheet');
+  if (drawerSheet) {
+    let startY = 0;
+    drawerSheet.addEventListener('touchstart', (e) => {
+      startY = e.touches[0].clientY;
+    }, { passive: true });
+    drawerSheet.addEventListener('touchend', (e) => {
+      const endY = e.changedTouches[0].clientY;
+      if (endY - startY > 80) {
+        closeDrawer();
+      }
+    }, { passive: true });
+  }
+
   // Close modals
   document.querySelectorAll('[data-close]').forEach(btn => {
     btn.addEventListener('click', (e) => {
@@ -1354,7 +1665,8 @@ function setupEventListeners() {
     }
 
     if (e.key === 'Escape') {
-      ['modal-search', 'modal-booking', 'modal-help', 'modal-info', 'modal-welcome'].forEach(closeModal);
+      ['modal-search', 'modal-booking', 'modal-help', 'modal-info', 'modal-welcome', 'modal-minimap'].forEach(closeModal);
+      closeDrawer();
     }
 
     // Directional keys for 360 look
