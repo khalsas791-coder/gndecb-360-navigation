@@ -37,6 +37,14 @@ let lat = 0, onPointerDownLat = 0;
 let targetLon = 180, targetLat = 0;
 let fov = 75, targetFov = 75;
 
+// Touch, Multi-Touch Pinch-to-Zoom & Inertia/Momentum Tracking (Google Maps Style)
+const activePointers = new Map();
+let lastPointerX = 0, lastPointerY = 0;
+let lastPointerTime = 0;
+let velocityLon = 0, velocityLat = 0;
+let initialPinchDistance = null;
+let pinchStartFov = 75;
+
 // Run initial system diagnostic
 runFullDiagnostic();
 
@@ -994,28 +1002,88 @@ function updateHotspotsPosition() {
 // CAMERA CONTROLS & ANIMATION LOOP
 // ============================================================================
 function onPointerDown(event) {
-  if (event.isPrimary === false) return;
+  activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
   isUserInteracting = true;
-  onPointerDownMouseX = event.clientX;
-  onPointerDownMouseY = event.clientY;
-  onPointerDownLon = lon;
-  onPointerDownLat = lat;
+  velocityLon = 0;
+  velocityLat = 0;
+
+  if (activePointers.size === 1) {
+    onPointerDownMouseX = event.clientX;
+    onPointerDownMouseY = event.clientY;
+    onPointerDownLon = lon;
+    onPointerDownLat = lat;
+    lastPointerX = event.clientX;
+    lastPointerY = event.clientY;
+    lastPointerTime = performance.now();
+  } else if (activePointers.size === 2) {
+    // Multi-touch pinch-to-zoom initialization
+    const pts = Array.from(activePointers.values());
+    initialPinchDistance = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+    pinchStartFov = targetFov;
+  }
 
   document.addEventListener('pointermove', onPointerMove);
   document.addEventListener('pointerup', onPointerUp);
+  document.addEventListener('pointercancel', onPointerUp);
 }
 
 function onPointerMove(event) {
-  if (event.isPrimary === false) return;
-  targetLon = (onPointerDownMouseX - event.clientX) * 0.22 + onPointerDownLon;
-  targetLat = (event.clientY - onPointerDownMouseY) * 0.22 + onPointerDownLat;
+  if (!activePointers.has(event.pointerId)) return;
+  activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+
+  if (activePointers.size === 1) {
+    const now = performance.now();
+    const dt = Math.max(1, now - lastPointerTime);
+    const dx = event.clientX - lastPointerX;
+    const dy = event.clientY - lastPointerY;
+
+    // Calculate angular velocity (degrees/ms) for smooth momentum release
+    velocityLon = -(dx * 0.18) / dt;
+    velocityLat = (dy * 0.18) / dt;
+
+    lastPointerX = event.clientX;
+    lastPointerY = event.clientY;
+    lastPointerTime = now;
+
+    targetLon = (onPointerDownMouseX - event.clientX) * 0.18 + onPointerDownLon;
+    targetLat = (event.clientY - onPointerDownMouseY) * 0.18 + onPointerDownLat;
+  } else if (activePointers.size === 2 && initialPinchDistance) {
+    // Multi-touch pinch-to-zoom calculation
+    const pts = Array.from(activePointers.values());
+    const currentDist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+    if (initialPinchDistance > 10 && currentDist > 10) {
+      const pinchRatio = initialPinchDistance / currentDist;
+      targetFov = Math.max(35, Math.min(100, pinchStartFov * pinchRatio));
+    }
+  }
 }
 
 function onPointerUp(event) {
-  if (event.isPrimary === false) return;
-  isUserInteracting = false;
-  document.removeEventListener('pointermove', onPointerMove);
-  document.removeEventListener('pointerup', onPointerUp);
+  activePointers.delete(event.pointerId);
+
+  if (activePointers.size === 0) {
+    isUserInteracting = false;
+    initialPinchDistance = null;
+    document.removeEventListener('pointermove', onPointerMove);
+    document.removeEventListener('pointerup', onPointerUp);
+    document.removeEventListener('pointercancel', onPointerUp);
+
+    // Limit maximum flick velocity for natural Street View feel
+    const maxVelocity = 0.65;
+    velocityLon = Math.max(-maxVelocity, Math.min(maxVelocity, velocityLon));
+    velocityLat = Math.max(-maxVelocity, Math.min(maxVelocity, velocityLat));
+  } else if (activePointers.size === 1) {
+    // Reset drag reference to remaining pointer
+    const remaining = Array.from(activePointers.values())[0];
+    onPointerDownMouseX = remaining.x;
+    onPointerDownMouseY = remaining.y;
+    onPointerDownLon = lon;
+    onPointerDownLat = lat;
+    lastPointerX = remaining.x;
+    lastPointerY = remaining.y;
+    lastPointerTime = performance.now();
+    initialPinchDistance = null;
+  }
 }
 
 function onDocumentMouseWheel(event) {
@@ -1032,8 +1100,25 @@ function onWindowResize() {
 function animate() {
   requestAnimationFrame(animate);
 
-  if (isAutoRotating && !isUserInteracting) {
-    targetLon += 0.08;
+  if (!isUserInteracting) {
+    // Street View momentum with 0.94 friction decay
+    if (Math.abs(velocityLon) > 0.001) {
+      targetLon += velocityLon * 16;
+      velocityLon *= 0.94;
+    } else {
+      velocityLon = 0;
+    }
+
+    if (Math.abs(velocityLat) > 0.001) {
+      targetLat += velocityLat * 16;
+      velocityLat *= 0.94;
+    } else {
+      velocityLat = 0;
+    }
+
+    if (isAutoRotating && Math.abs(velocityLon) < 0.01) {
+      targetLon += 0.08;
+    }
   }
 
   lon += (targetLon - lon) * 0.22;
@@ -1322,6 +1407,12 @@ function setupEventListeners() {
 
   document.getElementById('global-search-input')?.addEventListener('input', (e) => {
     handleSearchInput(e.target.value);
+  });
+
+  // Google Maps Style Recenter on Compass tap
+  document.querySelector('.compass-widget')?.addEventListener('click', () => {
+    targetLat = 0;
+    showToast('Horizon Level Re-centered');
   });
 
   // Top header action buttons
