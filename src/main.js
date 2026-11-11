@@ -22,6 +22,12 @@ let lastVisitedCampusScene = 'campus_main_gate';
 let isAutoRotating = false;
 let isLoadingTexture = false;
 
+// High-Performance Texture Cache & Predictive Preloader
+const textureCache = new Map();
+const pendingTextureLoads = new Map();
+let loaderTimeout = null;
+let activeLoadToken = 0;
+
 // Three.js Core Variables
 let scene, camera, renderer, sphereMesh, textureLoader;
 let isUserInteracting = false;
@@ -608,7 +614,110 @@ function renderSidePanel() {
 }
 
 /**
- * Load a specific viewpoint with safety and separation guarantees
+ * High-Performance Asynchronous Texture Loader with Memory Caching
+ * Omits mipmaps on equirectangular spheres to save 33% GPU memory and eliminate upload hitching.
+ */
+function getOrLoadTexture(url) {
+  if (textureCache.has(url)) {
+    return Promise.resolve(textureCache.get(url));
+  }
+  if (pendingTextureLoads.has(url)) {
+    return pendingTextureLoads.get(url);
+  }
+
+  const p = new Promise((resolve, reject) => {
+    textureLoader.load(
+      url,
+      (texture) => {
+        texture.colorSpace = THREE.SRGBColorSpace;
+        texture.generateMipmaps = false;
+        texture.minFilter = THREE.LinearFilter;
+        texture.magFilter = THREE.LinearFilter;
+        textureCache.set(url, texture);
+        pendingTextureLoads.delete(url);
+        resolve(texture);
+      },
+      undefined,
+      (err) => {
+        pendingTextureLoads.delete(url);
+        reject(err);
+      }
+    );
+  });
+
+  pendingTextureLoads.set(url, p);
+  return p;
+}
+
+/**
+ * Predictive background preloader: loads immediate connected neighbors during idle time
+ */
+function preloadNeighbors(viewpoint) {
+  if (!viewpoint) return;
+  const neighborIds = new Set();
+
+  if (viewpoint.connections) {
+    Object.values(viewpoint.connections).forEach(id => {
+      if (id) neighborIds.add(id);
+    });
+  }
+
+  if (viewpoint.hotspots) {
+    viewpoint.hotspots.forEach(hs => {
+      if (hs.targetScene) neighborIds.add(hs.targetScene);
+    });
+  }
+
+  const ids = Array.from(neighborIds);
+  let i = 0;
+
+  function loadNext() {
+    if (i >= ids.length) return;
+    const nextId = ids[i++];
+    const nextVp = getViewpoint(nextId);
+    if (nextVp && nextVp.hasImage && nextVp.image && !textureCache.has(nextVp.image)) {
+      getOrLoadTexture(nextVp.image).then(() => {
+        if ('requestIdleCallback' in window) {
+          window.requestIdleCallback(loadNext, { timeout: 1500 });
+        } else {
+          setTimeout(loadNext, 120);
+        }
+      }).catch(() => {
+        if ('requestIdleCallback' in window) {
+          window.requestIdleCallback(loadNext, { timeout: 1500 });
+        } else {
+          setTimeout(loadNext, 120);
+        }
+      });
+    } else {
+      loadNext();
+    }
+  }
+
+  if ('requestIdleCallback' in window) {
+    window.requestIdleCallback(loadNext, { timeout: 1000 });
+  } else {
+    setTimeout(loadNext, 150);
+  }
+}
+
+/**
+ * Smoothly apply texture to the 360 sphere without visual stutter
+ */
+function applySceneTexture(texture, viewpoint) {
+  sphereMesh.material.color.setHex(0xffffff);
+  sphereMesh.material.map = texture;
+  sphereMesh.material.needsUpdate = true;
+  
+  targetLon = viewpoint.initialLon !== undefined ? viewpoint.initialLon : 180;
+  targetLat = viewpoint.initialLat !== undefined ? viewpoint.initialLat : 0;
+
+  updateMinimapPin();
+  renderHotspots();
+}
+
+/**
+ * Load a specific viewpoint with instant cache delivery and background preloading
  */
 export function loadScene(sceneId) {
   const targetViewpoint = getViewpoint(sceneId);
@@ -658,39 +767,50 @@ export function loadScene(sceneId) {
   // Handle Real Panorama vs Pending Panorama
   const pendingOverlay = document.getElementById('panorama-pending-overlay');
   const webglCanvas = document.getElementById('webgl-canvas');
-  const loaderOverlay = document.getElementById('loader-overlay');
 
   if (targetViewpoint.hasImage && targetViewpoint.image) {
-    // Real image asset available
     if (pendingOverlay) pendingOverlay.classList.remove('active');
     if (webglCanvas) webglCanvas.classList.remove('blurred');
 
-    showLoader(true, `Loading 360° view for ${targetViewpoint.name}...`);
+    const imageUrl = targetViewpoint.image;
+    const isCached = textureCache.has(imageUrl);
+    const thisLoadToken = ++activeLoadToken;
 
-    textureLoader.load(
-      targetViewpoint.image,
-      (texture) => {
-        texture.colorSpace = THREE.SRGBColorSpace;
-        sphereMesh.material.color.setHex(0xffffff);
-        sphereMesh.material.map = texture;
-        sphereMesh.material.needsUpdate = true;
-        
-        targetLon = targetViewpoint.initialLon !== undefined ? targetViewpoint.initialLon : 180;
-        targetLat = targetViewpoint.initialLat !== undefined ? targetViewpoint.initialLat : 0;
+    // Fast-path: If texture is already cached in memory, apply INSTANTLY (0 ms latency, no loader)
+    if (isCached) {
+      if (loaderTimeout) { clearTimeout(loaderTimeout); loaderTimeout = null; }
+      showLoader(false);
+      applySceneTexture(textureCache.get(imageUrl), targetViewpoint);
+      preloadNeighbors(targetViewpoint);
+      return;
+    }
 
-        showLoader(false);
-        updateMinimapPin();
-        renderHotspots();
-      },
-      undefined,
-      (err) => {
-        console.warn(`[TextureLoader] Image failed to load at ${targetViewpoint.image}:`, err);
-        showLoader(false);
-        showToast(`Image not found at ${targetViewpoint.image}`);
+    // Only show loader if fetching over the network takes longer than 120ms
+    if (loaderTimeout) clearTimeout(loaderTimeout);
+    loaderTimeout = setTimeout(() => {
+      if (activeLoadToken === thisLoadToken) {
+        showLoader(true, `Loading 360° view for ${targetViewpoint.name}...`);
       }
-    );
+    }, 120);
+
+    getOrLoadTexture(imageUrl)
+      .then((texture) => {
+        if (activeLoadToken !== thisLoadToken) return;
+        if (loaderTimeout) { clearTimeout(loaderTimeout); loaderTimeout = null; }
+        showLoader(false);
+        applySceneTexture(texture, targetViewpoint);
+        preloadNeighbors(targetViewpoint);
+      })
+      .catch((err) => {
+        if (activeLoadToken !== thisLoadToken) return;
+        if (loaderTimeout) { clearTimeout(loaderTimeout); loaderTimeout = null; }
+        console.warn(`[TextureLoader] Image failed to load at ${imageUrl}:`, err);
+        showLoader(false);
+        showToast(`Image not found at ${imageUrl}`);
+      });
   } else {
     // Pending Panorama state (e.g. campus location awaiting photography)
+    if (loaderTimeout) { clearTimeout(loaderTimeout); loaderTimeout = null; }
     showLoader(false);
     if (webglCanvas) webglCanvas.classList.add('blurred');
     sphereMesh.material.map = null;
@@ -709,6 +829,7 @@ export function loadScene(sceneId) {
 
 /**
  * Update Directional D-Pad buttons state (FRONT, BACK, LEFT, RIGHT)
+ * If there is a connected scene, navigates to it. If not, smoothly rotates the camera view!
  */
 function updateDPadControls(viewpoint) {
   const directions = ['forward', 'back', 'left', 'right'];
@@ -721,14 +842,20 @@ function updateDPadControls(viewpoint) {
       if (targetId) {
         btn.disabled = false;
         btn.dataset.target = targetId;
+        btn.removeAttribute('data-turn');
         const targetVp = getViewpoint(targetId);
         if (tip && targetVp) {
           tip.textContent = `${dir.toUpperCase()}: ${targetVp.name}`;
         }
       } else {
-        btn.disabled = true;
+        btn.disabled = false;
         btn.removeAttribute('data-target');
-        if (tip) tip.textContent = `${dir.toUpperCase()} (No Route)`;
+        btn.dataset.turn = dir;
+        if (tip) {
+          tip.textContent = dir === 'left' ? 'Turn Left (45°)' :
+                            dir === 'right' ? 'Turn Right (45°)' :
+                            dir === 'back' ? 'Turn Around (180°)' : 'Look Forward';
+        }
       }
     }
   });
@@ -789,6 +916,16 @@ function renderHotspots() {
         </div>
       `;
     }
+
+    // Prefetch target scene on hover for instantaneous click response
+    el.addEventListener('pointerenter', () => {
+      if (hs.targetScene) {
+        const targetVp = getViewpoint(hs.targetScene);
+        if (targetVp && targetVp.hasImage && targetVp.image && !textureCache.has(targetVp.image)) {
+          getOrLoadTexture(targetVp.image);
+        }
+      }
+    });
 
     el.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -856,8 +993,8 @@ function onPointerDown(event) {
 
 function onPointerMove(event) {
   if (event.isPrimary === false) return;
-  targetLon = (onPointerDownMouseX - event.clientX) * 0.15 + onPointerDownLon;
-  targetLat = (event.clientY - onPointerDownMouseY) * 0.15 + onPointerDownLat;
+  targetLon = (onPointerDownMouseX - event.clientX) * 0.22 + onPointerDownLon;
+  targetLat = (event.clientY - onPointerDownMouseY) * 0.22 + onPointerDownLat;
 }
 
 function onPointerUp(event) {
@@ -885,9 +1022,9 @@ function animate() {
     targetLon += 0.08;
   }
 
-  lon += (targetLon - lon) * 0.1;
-  lat += (targetLat - lat) * 0.1;
-  fov += (targetFov - fov) * 0.1;
+  lon += (targetLon - lon) * 0.22;
+  lat += (targetLat - lat) * 0.22;
+  fov += (targetFov - fov) * 0.2;
 
   lat = Math.max(-85, Math.min(85, lat));
 
@@ -1100,12 +1237,39 @@ function setupEventListeners() {
     }
   });
 
-  // Directional D-Pad buttons
+  // Prefetch scene on hover over any button
+  document.addEventListener('pointerover', (e) => {
+    const sceneBtn = e.target.closest('[data-scene]');
+    if (sceneBtn && sceneBtn.dataset.scene) {
+      const targetVp = getViewpoint(sceneBtn.dataset.scene);
+      if (targetVp && targetVp.hasImage && targetVp.image && !textureCache.has(targetVp.image)) {
+        getOrLoadTexture(targetVp.image);
+      }
+    }
+  });
+
+  // Directional D-Pad buttons: prefetch on hover & instant navigation / smooth turns
   document.querySelectorAll('.dpad-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
+    btn.addEventListener('pointerenter', (e) => {
       const targetId = e.currentTarget.dataset.target;
       if (targetId) {
+        const targetVp = getViewpoint(targetId);
+        if (targetVp && targetVp.hasImage && targetVp.image && !textureCache.has(targetVp.image)) {
+          getOrLoadTexture(targetVp.image);
+        }
+      }
+    });
+
+    btn.addEventListener('click', (e) => {
+      const targetId = e.currentTarget.dataset.target;
+      const turnDir = e.currentTarget.dataset.turn;
+      if (targetId) {
         loadScene(targetId);
+      } else if (turnDir) {
+        if (turnDir === 'left') targetLon -= 45;
+        if (turnDir === 'right') targetLon += 45;
+        if (turnDir === 'back') targetLon += 180;
+        if (turnDir === 'forward') targetLat = 0;
       }
     });
   });
@@ -1194,10 +1358,10 @@ function setupEventListeners() {
     }
 
     // Directional keys for 360 look
-    if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') targetLon -= 5;
-    if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') targetLon += 5;
-    if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') targetLat += 5;
-    if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') targetLat -= 5;
+    if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') targetLon -= 12;
+    if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') targetLon += 12;
+    if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') targetLat += 8;
+    if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') targetLat -= 8;
     if (e.key === '+' || e.key === '=') targetFov = Math.max(35, targetFov - 5);
     if (e.key === '-') targetFov = Math.min(100, targetFov + 5);
 
