@@ -154,16 +154,16 @@ export const HOSTEL_VIEWPOINTS = {
     breadcrumb: ['Hostel', 'Perimeter', 'Way to Canteen'],
     minimapPos: { top: '99%', left: '15%' },
     connections: {
-      forward: 'way_to_mechanical',
+      back: 'way_to_mechanical',
       left: 'canteen',
-      back: 'gate0'
+      forward: 'gate0'
     },
     hotspots: [
       {
         lon: 180,
         lat: -12,
         type: 'arrow',
-        arrowDir: 'forward',
+        arrowDir: 'back',
         title: 'Walk Straight to Mechanical Branch',
         subtitle: 'Advance along campus road towards Mechanical Department',
         targetScene: 'way_to_mechanical'
@@ -181,7 +181,7 @@ export const HOSTEL_VIEWPOINTS = {
         lon: 0,
         lat: -12,
         type: 'arrow',
-        arrowDir: 'back',
+        arrowDir: 'forward',
         title: 'Walk Back to Gate 0',
         subtitle: 'Return to Hostel Main Gate 0',
         targetScene: 'gate0'
@@ -200,16 +200,16 @@ export const HOSTEL_VIEWPOINTS = {
     breadcrumb: ['Hostel', 'Perimeter', 'Way to Mechanical Branch'],
     minimapPos: { top: '99%', left: '25%' },
     connections: {
-      forward: 'mechanical_branch',
+      back: 'mechanical_branch',
       left: 'canteen',
-      back: 'way_to_canteen'
+      forward: 'way_to_canteen'
     },
     hotspots: [
       {
         lon: 180,
         lat: -12,
         type: 'arrow',
-        arrowDir: 'forward',
+        arrowDir: 'back',
         title: 'Enter Mechanical Engineering Branch',
         subtitle: 'Advance to Mechanical Department main entrance & labs',
         targetScene: 'mechanical_branch'
@@ -227,7 +227,7 @@ export const HOSTEL_VIEWPOINTS = {
         lon: 0,
         lat: -12,
         type: 'arrow',
-        arrowDir: 'back',
+        arrowDir: 'forward',
         title: 'Walk Back to Canteen Junction',
         subtitle: 'Return to campus perimeter road junction',
         targetScene: 'way_to_canteen'
@@ -246,15 +246,15 @@ export const HOSTEL_VIEWPOINTS = {
     breadcrumb: ['Hostel', 'Perimeter', 'Mechanical Branch 1'],
     minimapPos: { top: '99%', left: '32%' },
     connections: {
-      back: 'way_to_mechanical',
-      forward: 'mechanical_engineering_branch'
+      forward: 'way_to_mechanical',
+      back: 'mechanical_engineering_branch'
     },
     hotspots: [
       {
         lon: 0,
         lat: -12,
         type: 'arrow',
-        arrowDir: 'back',
+        arrowDir: 'forward',
         title: 'Exit to Department Road',
         subtitle: 'Return along road towards Canteen junction & hostel',
         targetScene: 'way_to_mechanical'
@@ -263,7 +263,7 @@ export const HOSTEL_VIEWPOINTS = {
         lon: 180,
         lat: -12,
         type: 'arrow',
-        arrowDir: 'forward',
+        arrowDir: 'back',
         title: 'Advance to Mechanical Engineering Branch',
         subtitle: 'Walk further along pathway towards CAD-CAM labs & workshops',
         targetScene: 'mechanical_engineering_branch'
@@ -291,8 +291,8 @@ export const HOSTEL_VIEWPOINTS = {
     breadcrumb: ['Hostel', 'Perimeter', 'Mechanical Engineering Branch'],
     minimapPos: { top: '96%', left: '33%' },
     connections: {
-      back: 'mechanical_branch',
-      forward: 'way_to_main_block_1',
+      forward: 'mechanical_branch',
+      back: 'way_to_main_block_1',
       inside: 'civil_lab',
       left: 'way_to_civil_block',
       up: 'mechanical_block',
@@ -303,7 +303,7 @@ export const HOSTEL_VIEWPOINTS = {
         lon: 90,
         lat: -12,
         type: 'arrow',
-        arrowDir: 'back',
+        arrowDir: 'forward',
         title: 'Walk Back to Mechanical Branch 1',
         subtitle: 'Return along pathway towards Mechanical Branch 1 & approach road',
         targetScene: 'mechanical_branch'
