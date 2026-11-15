@@ -1430,16 +1430,18 @@ export const HOSTEL_VIEWPOINTS = {
         arrowDir: 'forward',
         title: 'Walk to Campus 2nd Gate',
         subtitle: 'Return to college entrance portal & plaza',
-        targetScene: 'campus_2nd_gate'
+        targetScene: 'campus_2nd_gate',
+        targetHeading: 180
       },
       {
         lon: 0,
         lat: -12,
         type: 'arrow',
-        arrowDir: 'back',
+        arrowDir: 'forward',
         title: 'Walk Back to Gate Plaza',
         subtitle: 'Return to 2nd Gate approach',
-        targetScene: 'campus_2nd_gate'
+        targetScene: 'campus_2nd_gate',
+        targetHeading: 180
       },
       {
         lon: 90,
@@ -1471,10 +1473,11 @@ export const HOSTEL_VIEWPOINTS = {
         lon: 0,
         lat: -12,
         type: 'arrow',
-        arrowDir: 'back',
+        arrowDir: 'forward',
         title: 'Walk Back to Junction & Gate 0',
         subtitle: 'Return along approach road towards Mechanical junction & Gate 0',
-        targetScene: 'way_to_canteen'
+        targetScene: 'way_to_canteen',
+        targetHeading: 0
       },
       {
         lon: 180,

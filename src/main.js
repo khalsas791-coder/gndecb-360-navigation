@@ -672,7 +672,8 @@ function getOrLoadTexture(url) {
 }
 
 /**
- * Predictive background preloader: loads immediate connected neighbors during idle time
+ * Predictive background preloader: eagerly preloads connected neighbor textures
+ * so navigation clicks resolve with 0ms instantaneous cache hits
  */
 function preloadNeighbors(viewpoint) {
   if (!viewpoint) return;
@@ -690,37 +691,14 @@ function preloadNeighbors(viewpoint) {
     });
   }
 
-  const ids = Array.from(neighborIds);
-  let i = 0;
-
-  function loadNext() {
-    if (i >= ids.length) return;
-    const nextId = ids[i++];
-    const nextVp = getViewpoint(nextId);
-    if (nextVp && nextVp.hasImage && nextVp.image && !textureCache.has(nextVp.image)) {
-      getOrLoadTexture(nextVp.image).then(() => {
-        if ('requestIdleCallback' in window) {
-          window.requestIdleCallback(loadNext, { timeout: 1500 });
-        } else {
-          setTimeout(loadNext, 120);
-        }
-      }).catch(() => {
-        if ('requestIdleCallback' in window) {
-          window.requestIdleCallback(loadNext, { timeout: 1500 });
-        } else {
-          setTimeout(loadNext, 120);
-        }
-      });
-    } else {
-      loadNext();
-    }
-  }
-
-  if ('requestIdleCallback' in window) {
-    window.requestIdleCallback(loadNext, { timeout: 1000 });
-  } else {
-    setTimeout(loadNext, 150);
-  }
+  setTimeout(() => {
+    neighborIds.forEach(id => {
+      const nextVp = getViewpoint(id);
+      if (nextVp && nextVp.hasImage && nextVp.image && !textureCache.has(nextVp.image)) {
+        getOrLoadTexture(nextVp.image).catch(() => {});
+      }
+    });
+  }, 30);
 }
 
 /**
@@ -813,13 +791,17 @@ export function loadScene(sceneId, arrivalHeading = null) {
       return;
     }
 
-    // Only show loader if fetching over the network takes longer than 120ms
+    // Clear previous hotspots immediately so old arrows don't linger while new scene loads
+    const hotspotsContainer = document.getElementById('hotspots-overlay');
+    if (hotspotsContainer) hotspotsContainer.innerHTML = '';
+
+    // Only show loader if fetching over the network takes longer than 250ms
     if (loaderTimeout) clearTimeout(loaderTimeout);
     loaderTimeout = setTimeout(() => {
       if (activeLoadToken === thisLoadToken) {
         showLoader(true, `Loading 360° view for ${targetViewpoint.name}...`);
       }
-    }, 120);
+    }, 250);
 
     getOrLoadTexture(imageUrl)
       .then((texture) => {

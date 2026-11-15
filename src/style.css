@@ -457,7 +457,7 @@ body, html {
   transition: transform 0.2s ease;
 }
 
-/* Directional Arrow Rotations */
+/* Directional Arrow Rotations: in 360 street view, walking arrows point forward into the pathway */
 .streetview-arrow.dir-left svg {
   transform: rotate(-90deg);
 }
@@ -467,7 +467,7 @@ body, html {
 }
 
 .streetview-arrow.dir-back svg {
-  transform: rotate(180deg);
+  transform: rotate(0deg);
 }
 
 .streetview-arrow.dir-forward svg {
