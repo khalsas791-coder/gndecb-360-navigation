@@ -327,7 +327,8 @@ export const HOSTEL_VIEWPOINTS = {
         arrowDir: 'forward',
         title: 'Walk to Way to Main Block 1',
         subtitle: 'Exit avenue towards Main Academic Complex & connecting road',
-        targetScene: 'way_to_main_block_1'
+        targetScene: 'way_to_main_block_1',
+        targetHeading: 310
       },
       {
         lon: 180,
@@ -1065,10 +1066,11 @@ export const HOSTEL_VIEWPOINTS = {
         lon: 92,
         lat: -12,
         type: 'arrow',
-        arrowDir: 'left',
+        arrowDir: 'forward',
         title: 'Advance to Mechanical Engineering Branch',
         subtitle: 'Department of Mechanical Engineering, CAD-CAM Labs & Workshops',
-        targetScene: 'mechanical_engineering_branch'
+        targetScene: 'mechanical_engineering_branch',
+        targetHeading: 90
       },
       {
         lon: 180,
@@ -1077,16 +1079,18 @@ export const HOSTEL_VIEWPOINTS = {
         arrowDir: 'forward',
         title: 'Walk Back to Student Section & Main Block',
         subtitle: 'Return to Student Section plaza & Central Library',
-        targetScene: 'way_to_student_section_main_block'
+        targetScene: 'way_to_student_section_main_block',
+        targetHeading: 170
       },
       {
         lon: 310,
         lat: -12,
         type: 'arrow',
-        arrowDir: 'right',
+        arrowDir: 'forward',
         title: 'Advance to Way to Main Block 2',
-        subtitle: 'Advance along avenue towards Way to Main Block 2',
-        targetScene: 'way_to_main_block_2'
+        subtitle: 'Advance along avenue towards Main Academic Complex',
+        targetScene: 'way_to_main_block_2',
+        targetHeading: 180
       },
       {
         lon: 72,
@@ -1106,7 +1110,7 @@ export const HOSTEL_VIEWPOINTS = {
     category: 'Campus & Academic',
     image: HOSTEL_IMAGES.wayToMainBlock2,
     hasImage: true,
-    initialLon: 0,
+    initialLon: 180,
     floorLabel: 'MAIN BLK 2',
     breadcrumb: ['Hostel', 'Perimeter', 'Way to Main Block 2'],
     minimapPos: { top: '90%', left: '32%' },
@@ -1117,31 +1121,34 @@ export const HOSTEL_VIEWPOINTS = {
     },
     hotspots: [
       {
-        lon: 0,
+        lon: 180,
         lat: -12,
         type: 'arrow',
-        arrowDir: 'back',
-        title: 'Advance towards Gateway Pillars',
+        arrowDir: 'forward',
+        title: 'Advance to Way to Main Block 3',
         subtitle: 'Advance along avenue towards Way to Main Block 3',
-        targetScene: 'way_to_main_block_3'
+        targetScene: 'way_to_main_block_3',
+        targetHeading: 180
       },
       {
-        lon: 180,
+        lon: 0,
         lat: -12,
         type: 'arrow',
         arrowDir: 'forward',
         title: 'Walk Back to Way to Main Block 1',
         subtitle: 'Return towards Way to Main Block 1 & Mechanical Branch',
-        targetScene: 'way_to_main_block_1'
+        targetScene: 'way_to_main_block_1',
+        targetHeading: 92
       },
       {
-        lon: 270,
+        lon: 250,
         lat: -12,
         type: 'arrow',
-        arrowDir: 'left',
+        arrowDir: 'forward',
         title: 'Enter Administrative Block Promenade',
         subtitle: 'Step onto garden pathway towards Central Administrative Block & Fountain',
-        targetScene: 'way_to_admin_block_1'
+        targetScene: 'way_to_admin_block_1',
+        targetHeading: 100
       },
       {
         lon: 90,
@@ -1161,33 +1168,34 @@ export const HOSTEL_VIEWPOINTS = {
     category: 'Campus & Academic',
     image: HOSTEL_IMAGES.wayToMainBlock3,
     hasImage: true,
-    initialLon: 270,
+    initialLon: 180,
     floorLabel: 'MAIN BLK 3',
     breadcrumb: ['Hostel', 'Perimeter', 'Way to Main Block 3'],
     minimapPos: { top: '88%', left: '28%' },
     connections: {
-      forward: 'way_to_main_block_2',
-      left: 'way_to_main_block_2',
-      back: 'way_to_main_block_4'
+      forward: 'way_to_main_block_4',
+      back: 'way_to_main_block_2'
     },
     hotspots: [
+      {
+        lon: 180,
+        lat: -12,
+        type: 'arrow',
+        arrowDir: 'forward',
+        title: 'Advance to Way to Main Block 4',
+        subtitle: 'Advance along avenue towards Main Academic Block',
+        targetScene: 'way_to_main_block_4',
+        targetHeading: 180
+      },
       {
         lon: 0,
         lat: -12,
         type: 'arrow',
-        arrowDir: 'back',
-        title: 'Walk Back to Main Block Approach',
-        subtitle: 'Return towards Way to Main Block 4',
-        targetScene: 'way_to_main_block_4'
-      },
-      {
-        lon: 270,
-        lat: -12,
-        type: 'arrow',
         arrowDir: 'forward',
-        title: 'Advance to Way to Main Block 2',
-        subtitle: 'Advance down avenue through brick gateway',
-        targetScene: 'way_to_main_block_2'
+        title: 'Walk Back to Way to Main Block 2',
+        subtitle: 'Return along avenue towards Way to Main Block 2',
+        targetScene: 'way_to_main_block_2',
+        targetHeading: 0
       },
       {
         lon: 295,
@@ -1212,37 +1220,40 @@ export const HOSTEL_VIEWPOINTS = {
     breadcrumb: ['Hostel', 'Perimeter', 'Way to Main Block 4'],
     minimapPos: { top: '86%', left: '25%' },
     connections: {
-      forward: 'way_to_main_block_3',
-      back: 'way_to_2nd_gate',
+      forward: 'way_to_2nd_gate',
+      back: 'way_to_main_block_3',
       left: 'way_to_admin_block_1'
     },
     hotspots: [
-      {
-        lon: 0,
-        lat: -12,
-        type: 'arrow',
-        arrowDir: 'back',
-        title: 'Walk Back to Campus 2nd Gate Approach',
-        subtitle: 'Return along avenue towards 2nd Gate',
-        targetScene: 'way_to_2nd_gate'
-      },
       {
         lon: 180,
         lat: -12,
         type: 'arrow',
         arrowDir: 'forward',
-        title: 'Advance to Way to Main Block 3',
-        subtitle: 'Advance towards gateway pillars',
-        targetScene: 'way_to_main_block_3'
+        title: 'Advance to Campus 2nd Gate Approach',
+        subtitle: 'Advance along avenue towards 2nd Gate',
+        targetScene: 'way_to_2nd_gate',
+        targetHeading: 180
+      },
+      {
+        lon: 0,
+        lat: -12,
+        type: 'arrow',
+        arrowDir: 'forward',
+        title: 'Walk Back to Way to Main Block 3',
+        subtitle: 'Return along avenue towards Way to Main Block 3',
+        targetScene: 'way_to_main_block_3',
+        targetHeading: 0
       },
       {
         lon: 270,
         lat: -12,
         type: 'arrow',
-        arrowDir: 'left',
+        arrowDir: 'forward',
         title: 'Enter Administrative Block Promenade',
         subtitle: 'Step onto garden pathway towards Central Administrative Block & Fountain',
-        targetScene: 'way_to_admin_block_1'
+        targetScene: 'way_to_admin_block_1',
+        targetHeading: 100
       },
       {
         lon: 90,
@@ -1267,27 +1278,29 @@ export const HOSTEL_VIEWPOINTS = {
     breadcrumb: ['Hostel', 'Perimeter', 'Way to Campus 2nd Gate 1'],
     minimapPos: { top: '84%', left: '20%' },
     connections: {
-      forward: 'way_to_main_block_4',
-      back: 'way_to_2nd_gate_2'
+      forward: 'way_to_2nd_gate_2',
+      back: 'way_to_main_block_4'
     },
     hotspots: [
-      {
-        lon: 0,
-        lat: -12,
-        type: 'arrow',
-        arrowDir: 'back',
-        title: 'Walk Back to Way to 2nd Gate 2',
-        subtitle: 'Return along avenue towards 2nd Gate',
-        targetScene: 'way_to_2nd_gate_2'
-      },
       {
         lon: 180,
         lat: -12,
         type: 'arrow',
         arrowDir: 'forward',
-        title: 'Advance to Main Block Avenue',
-        subtitle: 'Advance along boulevard towards Way to Main Block 4',
-        targetScene: 'way_to_main_block_4'
+        title: 'Advance towards 2nd Gate',
+        subtitle: 'Advance along boulevard towards 2nd Gate',
+        targetScene: 'way_to_2nd_gate_2',
+        targetHeading: 180
+      },
+      {
+        lon: 0,
+        lat: -12,
+        type: 'arrow',
+        arrowDir: 'forward',
+        title: 'Walk Back to Way to Main Block 4',
+        subtitle: 'Return along boulevard towards Way to Main Block 4',
+        targetScene: 'way_to_main_block_4',
+        targetHeading: 0
       },
       {
         lon: 90,
@@ -1307,32 +1320,34 @@ export const HOSTEL_VIEWPOINTS = {
     category: 'Gates & Perimeter',
     image: HOSTEL_IMAGES.wayTo2ndGate2,
     hasImage: true,
-    initialLon: 0,
+    initialLon: 180,
     floorLabel: '2ND GATE 2',
     breadcrumb: ['Hostel', 'Perimeter', 'Way to Campus 2nd Gate 2'],
     minimapPos: { top: '82%', left: '16%' },
     connections: {
-      forward: 'way_to_2nd_gate',
-      back: 'campus_2nd_gate'
+      forward: 'campus_2nd_gate',
+      back: 'way_to_2nd_gate'
     },
     hotspots: [
       {
         lon: 180,
         lat: -12,
         type: 'arrow',
-        arrowDir: 'back',
-        title: 'Walk Back to Campus 2nd Gate',
+        arrowDir: 'forward',
+        title: 'Advance to Campus 2nd Gate',
         subtitle: 'Approach Guru Nanak Dev Engineering College 2nd Gate',
-        targetScene: 'campus_2nd_gate'
+        targetScene: 'campus_2nd_gate',
+        targetHeading: 180
       },
       {
         lon: 0,
         lat: -12,
         type: 'arrow',
         arrowDir: 'forward',
-        title: 'Advance to Central Boulevard',
+        title: 'Walk Back to Central Boulevard',
         subtitle: 'Return along shaded avenue to Way to 2nd Gate 1',
-        targetScene: 'way_to_2nd_gate'
+        targetScene: 'way_to_2nd_gate',
+        targetHeading: 0
       },
       {
         lon: 270,
@@ -1369,7 +1384,8 @@ export const HOSTEL_VIEWPOINTS = {
         arrowDir: 'forward',
         title: 'Enter Campus via 2nd Gate',
         subtitle: 'Step through gates into shaded campus avenue',
-        targetScene: 'way_to_2nd_gate_2'
+        targetScene: 'way_to_2nd_gate_2',
+        targetHeading: 0
       },
       {
         lon: 140,
@@ -2222,16 +2238,18 @@ export const HOSTEL_VIEWPOINTS = {
         arrowDir: 'forward',
         title: 'Advance towards Fountain',
         subtitle: 'Walk forward to Way to Administrative Block 2',
-        targetScene: 'way_to_admin_block_2'
+        targetScene: 'way_to_admin_block_2',
+        targetHeading: 137
       },
       {
         lon: 280,
         lat: -12,
         type: 'arrow',
-        arrowDir: 'back',
+        arrowDir: 'forward',
         title: 'Walk Back to Campus Avenue',
         subtitle: 'Return to Way to Main Block 2',
-        targetScene: 'way_to_main_block_2'
+        targetScene: 'way_to_main_block_2',
+        targetHeading: 180
       },
       {
         lon: 100,
@@ -2273,10 +2291,11 @@ export const HOSTEL_VIEWPOINTS = {
         lon: 317,
         lat: -12,
         type: 'arrow',
-        arrowDir: 'back',
+        arrowDir: 'forward',
         title: 'Walk Back towards Avenue',
         subtitle: 'Return to Way to Administrative Block 1',
-        targetScene: 'way_to_admin_block_1'
+        targetScene: 'way_to_admin_block_1',
+        targetHeading: 280
       },
       {
         lon: 137,
