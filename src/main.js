@@ -447,9 +447,11 @@ function initThreeViewer() {
   sphereMesh = new THREE.Mesh(geometry, material);
   scene.add(sphereMesh);
 
-  renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, preserveDrawingBuffer: true });
-  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, preserveDrawingBuffer: true, powerPreference: 'high-performance' });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.05;
 
   canvas.addEventListener('pointerdown', onPointerDown);
   window.addEventListener('resize', onWindowResize);
@@ -655,6 +657,9 @@ function getOrLoadTexture(url) {
         texture.generateMipmaps = false;
         texture.minFilter = THREE.LinearFilter;
         texture.magFilter = THREE.LinearFilter;
+        if (renderer && renderer.capabilities) {
+          texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+        }
         textureCache.set(url, texture);
         pendingTextureLoads.delete(url);
         resolve(texture);
@@ -1485,6 +1490,13 @@ function setupEventListeners() {
     if (e.key === '2' && !e.target.matches('input, select, textarea')) setExperienceSection('hostel');
   });
 }
+
+// Expose scene navigation helper for testing & external controls
+window.loadScene = loadScene;
+window.setCameraLook = (lonDeg, latDeg = 0) => {
+  targetLon = lonDeg;
+  targetLat = latDeg;
+};
 
 // Start application
 if (document.readyState === 'loading') {
