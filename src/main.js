@@ -10,6 +10,7 @@ import {
 } from './data/navigationRegistry.js';
 import { toggleAudioAmbiance, isSoundMuted } from './utils/audio.js';
 import { runFullDiagnostic } from './utils/validator.js';
+import { resolvePanoramaUrl } from './utils/cdnLoader.js';
 
 // ============================================================================
 // GLOBAL APPLICATION STATE
@@ -447,11 +448,11 @@ function initThreeViewer() {
   sphereMesh = new THREE.Mesh(geometry, material);
   scene.add(sphereMesh);
 
-  renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, preserveDrawingBuffer: true, powerPreference: 'high-performance' });
+  renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, preserveDrawingBuffer: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
+  renderer.setSize(window.innerWidth, window.innerHeight);
 
   canvas.addEventListener('pointerdown', onPointerDown);
   window.addEventListener('resize', onWindowResize);
@@ -658,7 +659,7 @@ function getOrLoadTexture(url) {
         texture.minFilter = THREE.LinearFilter;
         texture.magFilter = THREE.LinearFilter;
         if (renderer && renderer.capabilities) {
-          texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+          texture.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 16);
         }
         textureCache.set(url, texture);
         pendingTextureLoads.delete(url);
@@ -699,8 +700,11 @@ function preloadNeighbors(viewpoint) {
   setTimeout(() => {
     neighborIds.forEach(id => {
       const nextVp = getViewpoint(id);
-      if (nextVp && nextVp.hasImage && nextVp.image && !textureCache.has(nextVp.image)) {
-        getOrLoadTexture(nextVp.image).catch(() => {});
+      if (nextVp && nextVp.hasImage && nextVp.image) {
+        const nextUrl = resolvePanoramaUrl(nextVp.image);
+        if (!textureCache.has(nextUrl)) {
+          getOrLoadTexture(nextUrl).catch(() => {});
+        }
       }
     });
   }, 30);
@@ -783,7 +787,7 @@ export function loadScene(sceneId, arrivalHeading = null) {
     if (pendingOverlay) pendingOverlay.classList.remove('active');
     if (webglCanvas) webglCanvas.classList.remove('blurred');
 
-    const imageUrl = targetViewpoint.image;
+    const imageUrl = resolvePanoramaUrl(targetViewpoint.image);
     const isCached = textureCache.has(imageUrl);
     const thisLoadToken = ++activeLoadToken;
 
