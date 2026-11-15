@@ -726,12 +726,18 @@ function preloadNeighbors(viewpoint) {
 /**
  * Smoothly apply texture to the 360 sphere without visual stutter
  */
-function applySceneTexture(texture, viewpoint) {
+function applySceneTexture(texture, viewpoint, arrivalHeading = null) {
   sphereMesh.material.color.setHex(0xffffff);
   sphereMesh.material.map = texture;
   sphereMesh.material.needsUpdate = true;
   
-  targetLon = viewpoint.initialLon !== undefined ? viewpoint.initialLon : 180;
+  if (arrivalHeading !== null && arrivalHeading !== undefined) {
+    targetLon = arrivalHeading;
+  } else if (viewpoint.initialLon !== undefined) {
+    targetLon = viewpoint.initialLon;
+  } else {
+    targetLon = 180;
+  }
   targetLat = viewpoint.initialLat !== undefined ? viewpoint.initialLat : 0;
 
   updateMinimapPin();
@@ -741,7 +747,7 @@ function applySceneTexture(texture, viewpoint) {
 /**
  * Load a specific viewpoint with instant cache delivery and background preloading
  */
-export function loadScene(sceneId) {
+export function loadScene(sceneId, arrivalHeading = null) {
   const targetViewpoint = getViewpoint(sceneId);
   if (!targetViewpoint) {
     console.error(`[Navigation] Viewpoint with id "${sceneId}" not found.`);
@@ -802,7 +808,7 @@ export function loadScene(sceneId) {
     if (isCached) {
       if (loaderTimeout) { clearTimeout(loaderTimeout); loaderTimeout = null; }
       showLoader(false);
-      applySceneTexture(textureCache.get(imageUrl), targetViewpoint);
+      applySceneTexture(textureCache.get(imageUrl), targetViewpoint, arrivalHeading);
       preloadNeighbors(targetViewpoint);
       return;
     }
@@ -820,7 +826,7 @@ export function loadScene(sceneId) {
         if (activeLoadToken !== thisLoadToken) return;
         if (loaderTimeout) { clearTimeout(loaderTimeout); loaderTimeout = null; }
         showLoader(false);
-        applySceneTexture(texture, targetViewpoint);
+        applySceneTexture(texture, targetViewpoint, arrivalHeading);
         preloadNeighbors(targetViewpoint);
       })
       .catch((err) => {
@@ -952,7 +958,7 @@ function renderHotspots() {
     el.addEventListener('click', (e) => {
       e.stopPropagation();
       if (hs.targetScene) {
-        loadScene(hs.targetScene);
+        loadScene(hs.targetScene, hs.targetHeading);
       } else if (hs.info) {
         showInfoModal(hs.title, hs.subtitle, hs.info);
       }

@@ -150,23 +150,25 @@ export const HOSTEL_VIEWPOINTS = {
     category: 'Gates & Perimeter',
     image: HOSTEL_IMAGES.wayToCanteen,
     hasImage: true,
+    initialLon: 180,
     floorLabel: 'CANTEEN WAY',
     breadcrumb: ['Hostel', 'Perimeter', 'Way to Canteen'],
     minimapPos: { top: '99%', left: '15%' },
     connections: {
-      back: 'way_to_mechanical',
+      forward: 'way_to_mechanical',
       left: 'canteen',
-      forward: 'gate0'
+      back: 'gate0'
     },
     hotspots: [
       {
         lon: 180,
         lat: -12,
         type: 'arrow',
-        arrowDir: 'back',
+        arrowDir: 'forward',
         title: 'Walk Straight to Mechanical Branch',
         subtitle: 'Advance along campus road towards Mechanical Department',
-        targetScene: 'way_to_mechanical'
+        targetScene: 'way_to_mechanical',
+        targetHeading: 180
       },
       {
         lon: 90,
@@ -175,7 +177,8 @@ export const HOSTEL_VIEWPOINTS = {
         arrowDir: 'left',
         title: 'Turn Left to Old Canteen',
         subtitle: 'Path to Old Canteen & Tuck Shop area',
-        targetScene: 'canteen'
+        targetScene: 'canteen',
+        targetHeading: 180
       },
       {
         lon: 0,
@@ -184,7 +187,8 @@ export const HOSTEL_VIEWPOINTS = {
         arrowDir: 'forward',
         title: 'Walk Back to Gate 0',
         subtitle: 'Return to Hostel Main Gate 0',
-        targetScene: 'gate0'
+        targetScene: 'gate0',
+        targetHeading: 0
       }
     ]
   },
@@ -196,23 +200,25 @@ export const HOSTEL_VIEWPOINTS = {
     category: 'Academic & Perimeter',
     image: HOSTEL_IMAGES.wayToMechanical,
     hasImage: true,
+    initialLon: 180,
     floorLabel: 'MECH WAY',
     breadcrumb: ['Hostel', 'Perimeter', 'Way to Mechanical Branch'],
     minimapPos: { top: '99%', left: '25%' },
     connections: {
-      back: 'mechanical_branch',
+      forward: 'mechanical_branch',
       left: 'canteen',
-      forward: 'way_to_canteen'
+      back: 'way_to_canteen'
     },
     hotspots: [
       {
         lon: 180,
         lat: -12,
         type: 'arrow',
-        arrowDir: 'back',
+        arrowDir: 'forward',
         title: 'Enter Mechanical Engineering Branch',
         subtitle: 'Advance to Mechanical Department main entrance & labs',
-        targetScene: 'mechanical_branch'
+        targetScene: 'mechanical_branch',
+        targetHeading: 180
       },
       {
         lon: 90,
@@ -221,7 +227,8 @@ export const HOSTEL_VIEWPOINTS = {
         arrowDir: 'left',
         title: 'Turn Left to Old Canteen',
         subtitle: 'Access Old Canteen & Tuck Shop',
-        targetScene: 'canteen'
+        targetScene: 'canteen',
+        targetHeading: 180
       },
       {
         lon: 0,
@@ -230,7 +237,8 @@ export const HOSTEL_VIEWPOINTS = {
         arrowDir: 'forward',
         title: 'Walk Back to Canteen Junction',
         subtitle: 'Return to campus perimeter road junction',
-        targetScene: 'way_to_canteen'
+        targetScene: 'way_to_canteen',
+        targetHeading: 0
       }
     ]
   },
@@ -242,14 +250,25 @@ export const HOSTEL_VIEWPOINTS = {
     category: 'Academic & Perimeter',
     image: HOSTEL_IMAGES.mechanicalBranch,
     hasImage: true,
+    initialLon: 180,
     floorLabel: 'MECH BLK 1',
     breadcrumb: ['Hostel', 'Perimeter', 'Mechanical Branch 1'],
     minimapPos: { top: '99%', left: '32%' },
     connections: {
-      forward: 'way_to_mechanical',
-      back: 'mechanical_engineering_branch'
+      forward: 'mechanical_engineering_branch',
+      back: 'way_to_mechanical'
     },
     hotspots: [
+      {
+        lon: 180,
+        lat: -12,
+        type: 'arrow',
+        arrowDir: 'forward',
+        title: 'Advance to Mechanical Engineering Branch',
+        subtitle: 'Walk further along pathway towards CAD-CAM labs & workshops',
+        targetScene: 'mechanical_engineering_branch',
+        targetHeading: 180
+      },
       {
         lon: 0,
         lat: -12,
@@ -257,16 +276,8 @@ export const HOSTEL_VIEWPOINTS = {
         arrowDir: 'forward',
         title: 'Exit to Department Road',
         subtitle: 'Return along road towards Canteen junction & hostel',
-        targetScene: 'way_to_mechanical'
-      },
-      {
-        lon: 180,
-        lat: -12,
-        type: 'arrow',
-        arrowDir: 'back',
-        title: 'Advance to Mechanical Engineering Branch',
-        subtitle: 'Walk further along pathway towards CAD-CAM labs & workshops',
-        targetScene: 'mechanical_engineering_branch'
+        targetScene: 'way_to_mechanical',
+        targetHeading: 0
       },
       {
         lon: 90,
@@ -286,13 +297,13 @@ export const HOSTEL_VIEWPOINTS = {
     category: 'Academic & Perimeter',
     image: HOSTEL_IMAGES.mechanicalEngineeringBranch,
     hasImage: true,
-    initialLon: 270,
+    initialLon: 180,
     floorLabel: 'MECH ENG',
     breadcrumb: ['Hostel', 'Perimeter', 'Mechanical Engineering Branch'],
     minimapPos: { top: '96%', left: '33%' },
     connections: {
-      forward: 'mechanical_branch',
-      back: 'way_to_main_block_1',
+      back: 'mechanical_branch',
+      forward: 'way_to_main_block_1',
       inside: 'civil_lab',
       left: 'way_to_civil_block',
       up: 'mechanical_block',
@@ -306,7 +317,8 @@ export const HOSTEL_VIEWPOINTS = {
         arrowDir: 'forward',
         title: 'Walk Back to Mechanical Branch 1',
         subtitle: 'Return along pathway towards Mechanical Branch 1 & approach road',
-        targetScene: 'mechanical_branch'
+        targetScene: 'mechanical_branch',
+        targetHeading: 0
       },
       {
         lon: 270,
