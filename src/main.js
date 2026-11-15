@@ -709,14 +709,22 @@ function applySceneTexture(texture, viewpoint, arrivalHeading = null) {
   sphereMesh.material.map = texture;
   sphereMesh.material.needsUpdate = true;
   
+  let newLon = 180;
   if (arrivalHeading !== null && arrivalHeading !== undefined) {
-    targetLon = arrivalHeading;
+    newLon = arrivalHeading;
   } else if (viewpoint.initialLon !== undefined) {
-    targetLon = viewpoint.initialLon;
-  } else {
-    targetLon = 180;
+    newLon = viewpoint.initialLon;
   }
-  targetLat = viewpoint.initialLat !== undefined ? viewpoint.initialLat : 0;
+
+  const newLat = viewpoint.initialLat !== undefined ? viewpoint.initialLat : 0;
+
+  // Instantly lock camera heading to target direction so navigation is instantaneous with zero delay or spinning
+  lon = newLon;
+  targetLon = newLon;
+  lat = newLat;
+  targetLat = newLat;
+  velocityLon = 0;
+  velocityLat = 0;
 
   updateMinimapPin();
   renderHotspots();
@@ -1025,16 +1033,19 @@ function onPointerMove(event) {
     const dx = event.clientX - lastPointerX;
     const dy = event.clientY - lastPointerY;
 
+    // Fast, responsive Street View pan sensitivity (0.32 on touch, 0.24 on mouse)
+    const dragSensitivity = event.pointerType === 'touch' ? 0.32 : 0.24;
+
     // Calculate angular velocity (degrees/ms) for smooth momentum release
-    velocityLon = -(dx * 0.18) / dt;
-    velocityLat = (dy * 0.18) / dt;
+    velocityLon = -(dx * dragSensitivity) / dt;
+    velocityLat = (dy * dragSensitivity) / dt;
 
     lastPointerX = event.clientX;
     lastPointerY = event.clientY;
     lastPointerTime = now;
 
-    targetLon = (onPointerDownMouseX - event.clientX) * 0.18 + onPointerDownLon;
-    targetLat = (event.clientY - onPointerDownMouseY) * 0.18 + onPointerDownLat;
+    targetLon = (onPointerDownMouseX - event.clientX) * dragSensitivity + onPointerDownLon;
+    targetLat = (event.clientY - onPointerDownMouseY) * dragSensitivity + onPointerDownLat;
   } else if (activePointers.size === 2 && initialPinchDistance) {
     // Multi-touch pinch-to-zoom calculation
     const pts = Array.from(activePointers.values());
@@ -1109,9 +1120,14 @@ function animate() {
     }
   }
 
-  lon += (targetLon - lon) * 0.22;
-  lat += (targetLat - lat) * 0.22;
-  fov += (targetFov - fov) * 0.2;
+  // Shortest angular difference wrapping prevents slow 360-degree multi-second rotations
+  let diffLon = (targetLon - lon) % 360;
+  if (diffLon > 180) diffLon -= 360;
+  if (diffLon < -180) diffLon += 360;
+  lon += diffLon * 0.35;
+
+  lat += (targetLat - lat) * 0.35;
+  fov += (targetFov - fov) * 0.25;
 
   lat = Math.max(-85, Math.min(85, lat));
 
