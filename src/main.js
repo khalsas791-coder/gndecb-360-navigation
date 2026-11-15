@@ -10,7 +10,6 @@ import {
 } from './data/navigationRegistry.js';
 import { toggleAudioAmbiance, isSoundMuted } from './utils/audio.js';
 import { runFullDiagnostic } from './utils/validator.js';
-import { resolvePanoramaUrl } from './utils/cdnLoader.js';
 
 // ============================================================================
 // GLOBAL APPLICATION STATE
@@ -449,9 +448,7 @@ function initThreeViewer() {
   scene.add(sphereMesh);
 
   renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, preserveDrawingBuffer: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.05;
+  renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
 
   canvas.addEventListener('pointerdown', onPointerDown);
@@ -658,9 +655,6 @@ function getOrLoadTexture(url) {
         texture.generateMipmaps = false;
         texture.minFilter = THREE.LinearFilter;
         texture.magFilter = THREE.LinearFilter;
-        if (renderer && renderer.capabilities) {
-          texture.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 16);
-        }
         textureCache.set(url, texture);
         pendingTextureLoads.delete(url);
         resolve(texture);
@@ -700,11 +694,8 @@ function preloadNeighbors(viewpoint) {
   setTimeout(() => {
     neighborIds.forEach(id => {
       const nextVp = getViewpoint(id);
-      if (nextVp && nextVp.hasImage && nextVp.image) {
-        const nextUrl = resolvePanoramaUrl(nextVp.image);
-        if (!textureCache.has(nextUrl)) {
-          getOrLoadTexture(nextUrl).catch(() => {});
-        }
+      if (nextVp && nextVp.hasImage && nextVp.image && !textureCache.has(nextVp.image)) {
+        getOrLoadTexture(nextVp.image).catch(() => {});
       }
     });
   }, 30);
@@ -787,7 +778,7 @@ export function loadScene(sceneId, arrivalHeading = null) {
     if (pendingOverlay) pendingOverlay.classList.remove('active');
     if (webglCanvas) webglCanvas.classList.remove('blurred');
 
-    const imageUrl = resolvePanoramaUrl(targetViewpoint.image);
+    const imageUrl = targetViewpoint.image;
     const isCached = textureCache.has(imageUrl);
     const thisLoadToken = ++activeLoadToken;
 

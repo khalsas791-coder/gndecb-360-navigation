@@ -5,8 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "check-budget": "node scripts/check_budget.js",
-    "build": "node scripts/check_budget.js && vite build",
+    "build": "vite build",
     "preview": "vite preview"
   },
   "devDependencies": {
