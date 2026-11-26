@@ -3158,7 +3158,7 @@ export const HOSTEL_VIEWPOINTS = {
         targetHeading: 180
       },
       {
-        lon: 158,
+        lon: 118,
         lat: -14,
         type: 'arrow',
         arrowDir: 'forward',
@@ -3168,8 +3168,8 @@ export const HOSTEL_VIEWPOINTS = {
         targetHeading: 180
       },
       {
-        lon: 108,
-        lat: -12,
+        lon: 72,
+        lat: -13,
         type: 'arrow',
         arrowDir: 'right',
         title: '🏋️‍♂️ Walk to Outer Gym',
