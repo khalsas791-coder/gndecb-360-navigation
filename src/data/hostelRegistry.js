@@ -3408,9 +3408,10 @@ export const HOSTEL_VIEWPOINTS = {
     breadcrumb: ['Hostel', 'Dining', 'Mess Veranda'],
     minimapPos: { top: '65%', left: '85%' },
     connections: {
-      forward: 'mess',
+      forward: 'way_to_gym',
       back: 'way_to_mess',
-      left: 'way_to_gym'
+      left: 'way_to_mess',
+      right: 'mess'
     },
     hotspots: [
       {
@@ -3418,30 +3419,33 @@ export const HOSTEL_VIEWPOINTS = {
         lat: -12,
         type: 'arrow',
         arrowDir: 'forward',
-        title: '🍽️ Walk to Mess Serving Area & Counters',
-        subtitle: 'Step inside to food serving counters & main lobby',
-        targetScene: 'mess'
-      },
-      {
-        lon: 0,
-        lat: -12,
-        type: 'arrow',
-        arrowDir: 'back',
-        title: 'Walk to Gate 2 Mess Pathway',
-        subtitle: 'Exit along pathway towards Gate 2 approach',
-        targetScene: 'way_to_mess'
+        title: '🏋️‍♂️ Walk to Main Gym Pathway',
+        subtitle: 'Enter covered walkway towards gym',
+        targetScene: 'way_to_gym',
+        targetHeading: 180
       },
       {
         lon: 270,
-        lat: -10,
+        lat: -12,
         type: 'arrow',
-        arrowDir: 'left',
-        title: '🏋️‍♂️ Walk to Main Gym Pathway',
-        subtitle: 'Enter covered walkway towards gym',
-        targetScene: 'way_to_gym'
+        arrowDir: 'forward',
+        title: '🍽️ Walk to Mess Serving Area & Counters',
+        subtitle: 'Step inside to food serving counters & main lobby',
+        targetScene: 'mess',
+        targetHeading: 180
       },
       {
-        lon: 90,
+        lon: 98,
+        lat: -12,
+        type: 'arrow',
+        arrowDir: 'forward',
+        title: 'Walk to Gate 2 Mess Pathway',
+        subtitle: 'Exit along pathway towards Gate 2 approach',
+        targetScene: 'way_to_mess',
+        targetHeading: 0
+      },
+      {
+        lon: 140,
         lat: -8,
         type: 'info',
         title: 'Mess Covered Veranda & Seating',
