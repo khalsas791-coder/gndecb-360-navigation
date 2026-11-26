@@ -3158,7 +3158,7 @@ export const HOSTEL_VIEWPOINTS = {
         targetHeading: 180
       },
       {
-        lon: 147,
+        lon: 158,
         lat: -14,
         type: 'arrow',
         arrowDir: 'forward',
@@ -3168,7 +3168,7 @@ export const HOSTEL_VIEWPOINTS = {
         targetHeading: 180
       },
       {
-        lon: 90,
+        lon: 108,
         lat: -12,
         type: 'arrow',
         arrowDir: 'right',
