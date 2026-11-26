@@ -743,9 +743,9 @@
       "id": "floor3",
       "filename": "floor3.png",
       "localPath": "/floor3.png",
-      "nativeWidth": 1024,
-      "nativeHeight": 1024,
-      "aspectRatio": 1.0,
+      "nativeWidth": 1774,
+      "nativeHeight": 887,
+      "aspectRatio": 2.0,
       "category": "custom",
       "availableTiers": [
         "2k"

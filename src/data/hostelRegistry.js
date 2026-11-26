@@ -3846,22 +3846,41 @@ export const HOSTEL_VIEWPOINTS = {
     },
     hotspots: [
       {
-        lon: 180,
-        lat: -15,
+        lon: 60,
+        lat: 2,
         type: 'arrow',
         arrowDir: 'forward',
-        title: 'Walk Forward to Floor 4',
-        subtitle: 'Continue up hallway towards Floor 4',
+        title: '🏢 Ascend Stairs to Floor 4',
+        subtitle: 'Take stairs up to Floor 4 residential wing',
+        targetScene: 'floor4',
+        targetHeading: 180
+      },
+      {
+        lon: 80,
+        lat: -16,
+        type: 'arrow',
+        arrowDir: 'back',
+        title: '🏢 Descend Stairs to Floor 2 Main Entrance & Landing',
+        subtitle: 'Return down stairs to Floor 2 Main Entrance & Landing',
+        targetScene: 'floor2',
+        targetHeading: 180
+      },
+      {
+        lon: 180,
+        lat: -12,
+        type: 'arrow',
+        arrowDir: 'forward',
+        title: 'Walk Down Floor 3 Corridor',
+        subtitle: 'Student rooms 301 - 320 wing',
         targetScene: 'floor4'
       },
       {
-        lon: 0,
-        lat: -15,
-        type: 'arrow',
-        arrowDir: 'back',
-        title: 'Walk Back to Floor 2',
-        subtitle: 'Return down corridor to Floor 2',
-        targetScene: 'floor2'
+        lon: 260,
+        lat: -8,
+        type: 'info',
+        title: 'Courtyard & Campus View',
+        subtitle: '3rd Floor Quadrangle View',
+        info: 'Panoramic 3rd-floor view overlooking the hostel inner courtyard, campus trees, and student walkways.'
       }
     ]
   },
