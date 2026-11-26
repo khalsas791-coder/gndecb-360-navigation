@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import './style.css';
+import './landing.css';
 import {
   ALL_SECTIONS,
   getViewpoint,
@@ -56,6 +57,455 @@ function initApp() {
   if (!appContainer) return;
 
   appContainer.innerHTML = `
+    
+    <!-- ====================================================================== -->
+    <!-- 1. STARTING COLLEGE HOMEPAGE & PORTAL                                 -->
+    <!-- ====================================================================== -->
+    <div id="landing-portal" class="landing-portal">
+      <!-- Institutional Top Sticky Navbar -->
+      <header class="landing-nav">
+        <div class="nav-container">
+          <a href="#hero" class="nav-brand" title="Guru Nanak Dev Engineering College, Bidar">
+            <div class="nav-logo-box">
+              <img src="/gndec_logo_web.png" alt="GNDEC Bidar Emblem" class="nav-logo-img" />
+            </div>
+            <div class="nav-brand-text">
+              <span class="nav-college-title">GURU NANAK DEV ENGINEERING COLLEGE</span>
+              <span class="nav-college-sub">BIDAR, KARNATAKA • ESTD. 1980 • NAAC 'A+' GRADE</span>
+            </div>
+          </a>
+
+          <ul class="nav-links" id="nav-links-menu">
+            <li class="nav-link-item"><a href="#hero">Home</a></li>
+            <li class="nav-link-item"><a href="#about-college">About College</a></li>
+            <li class="nav-link-item"><a href="#about-project">About Project</a></li>
+            <li class="nav-link-item"><a href="#campus-highlights">Highlights</a></li>
+            <li class="nav-link-item"><a href="#department-hod">Department & HOD</a></li>
+            <li class="nav-link-item nav-link-mobile-cta">
+              <button id="btn-nav-mobile-menu-start" class="btn-nav-start" style="width:100%; justify-content:center;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+                <span>START 360° NAVIGATION</span>
+              </button>
+            </li>
+          </ul>
+
+          <div class="nav-actions">
+            <button id="btn-nav-start-tour" class="btn-nav-start desktop-only-start" title="Launch 360° Smart Campus Navigation">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+              <span>START NAVIGATION</span>
+            </button>
+            <button id="btn-nav-mobile-pill" class="btn-nav-mobile-pill" title="Start 360 Navigation">
+              <span>360°</span>
+            </button>
+            <button id="btn-nav-mobile-toggle" class="btn-nav-mobile-toggle" aria-label="Toggle Navigation Menu">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- 1. HERO SECTION -->
+      <section class="landing-hero" id="hero">
+        <div class="hero-glow-orb"></div>
+        <div class="hero-content">
+          <!-- Accreditation Tag -->
+          <div class="hero-accred-badge">
+            <span class="star-icon">⭐</span>
+            <span>APPROVED BY AICTE NEW DELHI • AFFILIATED TO VTU BELAGAVI • NAAC 'A+' GRADE • ESTD. 1980</span>
+          </div>
+
+          <!-- Official College Logo Crest -->
+          <div class="hero-crest-wrapper">
+            <img src="/gndec_logo_web.png" alt="Official GNDEC Bidar Crest" class="hero-crest-img" />
+          </div>
+
+          <!-- Full College Name -->
+          <h1 class="hero-college-name">GURU NANAK DEV ENGINEERING COLLEGE, BIDAR</h1>
+          
+          <!-- Department Presenter Tag -->
+          <div class="hero-dept-tag">DEPARTMENT OF COMPUTER SCIENCE AND ENGINEERING (AI&ML)</div>
+
+          <!-- Project Title & Tagline -->
+          <div class="hero-project-box">
+            <h2 class="hero-project-title">360° SMART CAMPUS NAVIGATION</h2>
+            <p class="hero-tagline">"Explore Your Campus Through an Immersive 360° Experience."</p>
+          </div>
+
+          <!-- Short Introduction -->
+          <p class="hero-college-intro">
+            Established in 1980 under the visionary leadership of the Sri Nanak Jhira Saheb Foundation, Guru Nanak Dev Engineering College (GNDEC), Bidar is a premier center of technical education in Karnataka. Set across a lush green campus, GNDEC empowers aspiring engineers with cutting-edge laboratories, industry-ready technical education, innovation mentorship, and holistic student growth.
+          </p>
+
+          <!-- Primary Actions Hub -->
+          <div class="hero-cta-hub">
+            <button id="btn-hero-start-nav" class="btn-hero-primary" title="Launch Full 360° Interactive Campus Navigation">
+              <span class="btn-hero-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M16.2 7.8l-2 6.3-6.4 2 2-6.3z"/></svg>
+              </span>
+              <span>START NAVIGATION</span>
+              <span class="btn-hero-badge">Interactive 360° VR</span>
+            </button>
+
+            <div class="hero-quick-jumps">
+              <button class="btn-quick-jump" data-scene="campus_2nd_gate" data-section="campus">
+                <span>🏛️ Explore Academic Campus</span>
+              </button>
+              <button class="btn-quick-jump" data-scene="campus_2nd_gate" data-section="hostel">
+                <span>🏠 Explore Student Hostels</span>
+              </button>
+              <button class="btn-quick-jump" data-scene="mb_3f_cse_aiml_hod" data-section="hostel">
+                <span>💻 CSE (AI&ML) Department & HOD</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Key Metrics Strip -->
+          <div class="hero-stats-strip">
+            <div class="hero-stat-card">
+              <span class="stat-number gold">1980</span>
+              <span class="stat-label">40+ Years Legacy</span>
+            </div>
+            <div class="hero-stat-card">
+              <span class="stat-number cyan">NAAC A+</span>
+              <span class="stat-label">Grade Accreditation</span>
+            </div>
+            <div class="hero-stat-card">
+              <span class="stat-number">30+</span>
+              <span class="stat-label">HD 360° Panoramas</span>
+            </div>
+            <div class="hero-stat-card">
+              <span class="stat-number cyan">100% VR</span>
+              <span class="stat-label">Street-View Walkthrough</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. ABOUT SECTION (COLLEGE & PROJECT) -->
+      <section class="section-about" id="about-college">
+        <div class="section-header">
+          <span class="section-pill-tag">Institutional Heritage & Innovation</span>
+          <h2 class="section-title">About Our College & Project</h2>
+          <p class="section-subtitle">
+            Discover the legacy of GNDEC Bidar and how our cutting-edge 360° virtual navigation platform empowers students, visitors, and alumni to explore the entire campus virtually.
+          </p>
+        </div>
+
+        <div class="about-grid">
+          <!-- About Our College Card -->
+          <div class="about-card" id="about-college-card">
+            <div class="about-badge">
+              <span>🏛️ Engineering Education Excellence</span>
+            </div>
+            <h3 class="about-card-title">About Our College</h3>
+            <div class="about-card-sub">GURU NANAK DEV ENGINEERING COLLEGE, BIDAR</div>
+            <p class="about-text">
+              Guru Nanak Dev Engineering College, Bidar was founded in August 1980 by the Prabandhak Committee, Gurudwara Sri Nanak Jhira Saheb under the visionary leadership of founder Sardar Joga Singh Ji. For over four decades, the institution has stood at the forefront of technical learning, producing skilled engineers and innovators globally.
+            </p>
+            <p class="about-text">
+              Permanently affiliated to Visvesvaraya Technological University (VTU), Belagavi, approved by AICTE New Delhi, and accredited by NAAC with a prestigious 'A+' Grade, GNDEC fosters academic rigor, hands-on experiential education, student research, and value-based personal development.
+            </p>
+            <div class="about-pillars">
+              <div class="pillar-item">
+                <div class="pillar-icon">🎓</div>
+                <div class="pillar-title">VTU Affiliation & AICTE</div>
+                <div class="pillar-desc">Comprehensive undergraduate & postgraduate curricula aligned with modern industry benchmarks.</div>
+              </div>
+              <div class="pillar-item">
+                <div class="pillar-icon">🔬</div>
+                <div class="pillar-title">Advanced Laboratories</div>
+                <div class="pillar-desc">Specialized AI/ML computing clusters, robotics labs, CAD suites, and modern workshops.</div>
+              </div>
+              <div class="pillar-item">
+                <div class="pillar-icon">🚀</div>
+                <div class="pillar-title">Innovation & Research</div>
+                <div class="pillar-desc">Student project incubation, technical hackathons, research symposiums, and patent support.</div>
+              </div>
+              <div class="pillar-item">
+                <div class="pillar-icon">🌿</div>
+                <div class="pillar-title">Holistic Student Growth</div>
+                <div class="pillar-desc">Lush 25+ acre green campus, modern hostels, central library, and multi-sport complexes.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- About Our Project Card -->
+          <div class="about-card" id="about-project">
+            <div class="about-badge">
+              <span>🌐 Immersive Digital Twin</span>
+            </div>
+            <h3 class="about-card-title">About Our Project</h3>
+            <div class="about-card-sub">360° SMART CAMPUS NAVIGATION PLATFORM</div>
+            <p class="about-text">
+              The 360° Smart Campus Navigation platform is an institutional digital twin engineered to help students, parents, incoming freshmen, visiting dignitaries, and alumni explore Guru Nanak Dev Engineering College and student hostels through interactive, photorealistic panoramic views.
+            </p>
+            <p class="about-text">
+              Eliminating geographic barriers, our platform provides street-view style directional walking, room-by-room inspection, floor elevator directories, and real-time orientation to ensure seamless virtual navigation across both academic blocks and residential facilities.
+            </p>
+            <div class="about-pillars">
+              <div class="pillar-item">
+                <div class="pillar-icon">🔄</div>
+                <div class="pillar-title">360° Panoramic Panoramas</div>
+                <div class="pillar-desc">High-definition equirectangular photography capturing every key academic and hostel viewpoint.</div>
+              </div>
+              <div class="pillar-item">
+                <div class="pillar-icon">🧭</div>
+                <div class="pillar-title">Street-View Walking</div>
+                <div class="pillar-desc">Directional hotspots, glowing arrows, and intuitive D-Pad controls for realistic spatial exploration.</div>
+              </div>
+              <div class="pillar-item">
+                <div class="pillar-icon">🏢</div>
+                <div class="pillar-title">Dual Campus & Hostel Modes</div>
+                <div class="pillar-desc">Dedicated navigation tracks for academic blocks, departments, labs, hostel rooms, mess, and gym.</div>
+              </div>
+              <div class="pillar-item">
+                <div class="pillar-icon">📱</div>
+                <div class="pillar-title">Universal Device Access</div>
+                <div class="pillar-desc">Zero app installation required; runs natively on mobile smartphones, tablets, and desktop browsers.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. CAMPUS HIGHLIGHTS SHOWCASE -->
+      <section class="section-highlights" id="campus-highlights">
+        <div class="section-header">
+          <span class="section-pill-tag">Interactive Destinations</span>
+          <h2 class="section-title">Explore Key Campus Highlights</h2>
+          <p class="section-subtitle">
+            Jump directly into any academic landmark or residential facility in high-definition 360° virtual reality.
+          </p>
+        </div>
+
+        <div class="highlights-grid">
+          <div class="highlight-card">
+            <div class="highlight-icon-box">🏛️</div>
+            <h4 class="highlight-card-title">Academic Main Block</h4>
+            <p class="highlight-card-desc">Experience the multi-level institutional atrium, administrative offices, dean chambers, and lecture halls.</p>
+            <button class="btn-card-launch" data-scene="campus_2nd_gate" data-section="campus">
+              <span>Explore Main Block</span>
+              <span>→</span>
+            </button>
+          </div>
+
+          <div class="highlight-card">
+            <div class="highlight-icon-box">💻</div>
+            <h4 class="highlight-card-title">CSE (AI&ML) Department</h4>
+            <p class="highlight-card-desc">Visit the specialized AI&ML computational laboratories, department faculty rooms, and HOD Office.</p>
+            <button class="btn-card-launch" data-scene="mb_3f_cse_aiml_hod" data-section="hostel">
+              <span>Explore CSE(AI&ML)</span>
+              <span>→</span>
+            </button>
+          </div>
+
+          <div class="highlight-card">
+            <div class="highlight-icon-box">📚</div>
+            <h4 class="highlight-card-title">Central Multi-Level Library</h4>
+            <p class="highlight-card-desc">Browse through 1st and 2nd floor library reading halls, digital repository portals, and reference sections.</p>
+            <button class="btn-card-launch" data-scene="first_floor_library" data-section="hostel">
+              <span>Explore Library</span>
+              <span>→</span>
+            </button>
+          </div>
+
+          <div class="highlight-card">
+            <div class="highlight-icon-box">🎭</div>
+            <h4 class="highlight-card-title">University Auditorium</h4>
+            <p class="highlight-card-desc">Tour the grand university auditorium hosting national symposiums, technical summits, and cultural fests.</p>
+            <button class="btn-card-launch" data-scene="campus_auditorium" data-section="campus">
+              <span>Explore Auditorium</span>
+              <span>→</span>
+            </button>
+          </div>
+
+          <div class="highlight-card">
+            <div class="highlight-icon-box">🏠</div>
+            <h4 class="highlight-card-title">Student Hostels & Mess</h4>
+            <p class="highlight-card-desc">Walk through the reception lobby, dining hall, indoor gymnasiums, and student residential corridors.</p>
+            <button class="btn-card-launch" data-scene="lobby_hub" data-section="hostel">
+              <span>Explore Hostels</span>
+              <span>→</span>
+            </button>
+          </div>
+
+          <div class="highlight-card">
+            <div class="highlight-icon-box">🛕</div>
+            <h4 class="highlight-card-title">Gurudwara Sahib</h4>
+            <p class="highlight-card-desc">Experience the serene spiritual sanctum and prayer hall located on the 5th floor of the campus complex.</p>
+            <button class="btn-card-launch" data-scene="f5_gurudwara" data-section="hostel">
+              <span>Explore Gurudwara</span>
+              <span>→</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. DEPARTMENT AND HOD SECTION -->
+      <section class="section-department" id="department-hod">
+        <div class="section-header">
+          <span class="section-pill-tag">Academic Department & Leadership</span>
+          <h2 class="section-title">Department & Faculty Leadership</h2>
+          <p class="section-subtitle">
+            Center for Advanced Computing, Artificial Intelligence & Machine Learning at Guru Nanak Dev Engineering College, Bidar.
+          </p>
+        </div>
+
+        <div class="department-banner">
+          <!-- Department Information -->
+          <div class="dept-info">
+            <div class="dept-pill">
+              <span>⚡ Academic Innovation Hub</span>
+            </div>
+            <h3 class="dept-title">DEPARTMENT OF COMPUTER SCIENCE AND ENGINEERING (AI&ML)</h3>
+            <div class="dept-subtitle">Guru Nanak Dev Engineering College, Bidar</div>
+            <p class="dept-desc">
+              The Department of Computer Science and Engineering (Artificial Intelligence and Machine Learning) is dedicated to preparing future-ready engineers capable of driving next-generation computational breakthroughs. Our curriculum integrates theoretical foundations with intensive practical application in machine learning algorithms, deep learning neural networks, computer vision, natural language processing, and autonomous intelligent systems.
+            </p>
+            <div class="dept-bullets">
+              <div class="dept-bullet-item">
+                <span class="bullet-dot"></span>
+                <span>GPU-Accelerated AI Laboratories</span>
+              </div>
+              <div class="dept-bullet-item">
+                <span class="bullet-dot"></span>
+                <span>Industry-Aligned Machine Learning Projects</span>
+              </div>
+              <div class="dept-bullet-item">
+                <span class="bullet-dot"></span>
+                <span>Student Research & Patent Incubation</span>
+              </div>
+              <div class="dept-bullet-item">
+                <span class="bullet-dot"></span>
+                <span>Active Global Alumni Mentorship Network</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Professional Faculty Profile Card for HOD -->
+          <div class="faculty-profile-card">
+            <div class="faculty-card-header-badge">Leadership</div>
+            
+            <!-- Faculty Avatar / Monogram Crest -->
+            <div class="faculty-avatar-wrap">
+              <div class="faculty-avatar-inner">
+                <span class="faculty-avatar-icon">👨‍🏫</span>
+                <span class="faculty-monogram">PR</span>
+              </div>
+            </div>
+
+            <span class="faculty-designation-pill">Head of Department</span>
+            <h3 class="faculty-name">Mr. Praveen Reddy</h3>
+            <p class="faculty-role-title">Department of Computer Science and Engineering (AI&ML)</p>
+            <p class="faculty-institution">Guru Nanak Dev Engineering College, Bidar</p>
+
+            <!-- Additional Responsibility Badge -->
+            <div class="faculty-responsibility-box">
+              <span class="resp-icon">⭐</span>
+              <div class="resp-text">
+                <span class="resp-label">Additional Responsibility</span>
+                <strong class="resp-title">Head of Alumni</strong>
+              </div>
+            </div>
+
+            <p class="faculty-bio">
+              Guiding the Department of CSE (AI&ML) towards academic rigor, technical research, and cutting-edge innovations in artificial intelligence, while fostering lifelong global connections through the GNDEC Alumni Association.
+            </p>
+
+            <button class="btn-faculty-tour" data-scene="mb_3f_cse_aiml_hod" data-section="hostel" title="Directly View HOD Office in 360°">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+              <span>Take 360° Tour of HOD Office & AI Lab</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. INSTITUTIONAL FOOTER -->
+      <footer class="landing-footer">
+        <div class="footer-container">
+          <div class="footer-top-grid">
+            <!-- Brand Column -->
+            <div class="footer-col-brand">
+              <div class="footer-brand-header">
+                <div class="footer-logo-box">
+                  <img src="/gndec_logo_web.png" alt="GNDEC Logo" class="footer-logo-img" />
+                </div>
+                <div>
+                  <div class="footer-brand-title">Guru Nanak Dev Engineering College, Bidar</div>
+                  <div class="footer-dept-tag">Department of CSE (AI&ML)</div>
+                </div>
+              </div>
+              <p class="footer-brand-desc">
+                Official 360° Smart Campus Navigation Platform. Designed to deliver an immersive, photorealistic virtual exploration of college academic blocks, computing labs, central library, and student hostels.
+              </p>
+              <div class="footer-credit-badge">
+                <span>✨ Designed and Developed by CSE (AI&ML) Department</span>
+              </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div>
+              <h4 class="footer-col-title">Quick Navigation</h4>
+              <ul class="footer-links-list">
+                <li><a href="#hero"><span>›</span> Home Portal</a></li>
+                <li><a href="#about-college"><span>›</span> About Our College</a></li>
+                <li><a href="#about-project"><span>›</span> About 360° Project</a></li>
+                <li><a href="#campus-highlights"><span>›</span> Campus Highlights</a></li>
+                <li><a href="#department-hod"><span>›</span> Department & HOD</a></li>
+              </ul>
+            </div>
+
+            <!-- Campus Highlights Links -->
+            <div>
+              <h4 class="footer-col-title">Virtual 360° Views</h4>
+              <ul class="footer-links-list">
+                <li><a href="javascript:void(0)" class="footer-scene-link" data-scene="campus_2nd_gate" data-section="campus"><span>›</span> Academic Block</a></li>
+                <li><a href="javascript:void(0)" class="footer-scene-link" data-scene="mb_3f_cse_aiml_hod" data-section="hostel"><span>›</span> CSE (AI&ML) Department</a></li>
+                <li><a href="javascript:void(0)" class="footer-scene-link" data-scene="first_floor_library" data-section="hostel"><span>›</span> Central Library</a></li>
+                <li><a href="javascript:void(0)" class="footer-scene-link" data-scene="lobby_hub" data-section="hostel"><span>›</span> Student Hostel Lobby</a></li>
+                <li><a href="javascript:void(0)" class="footer-scene-link" data-scene="f5_gurudwara" data-section="hostel"><span>›</span> Gurudwara Sahib</a></li>
+              </ul>
+            </div>
+
+            <!-- Institutional Details -->
+            <div>
+              <h4 class="footer-col-title">Institutional Info</h4>
+              <div class="footer-info-item">
+                <span class="footer-info-icon">📍</span>
+                <span>Guru Nanak Dev Engineering College, Mailoor Road, Bidar, Karnataka - 585403, India</span>
+              </div>
+              <div class="footer-info-item">
+                <span class="footer-info-icon">🏛️</span>
+                <span>Affiliated to Visvesvaraya Technological University (VTU), Belagavi</span>
+              </div>
+              <div class="footer-info-item">
+                <span class="footer-info-icon">🎖️</span>
+                <span>Approved by AICTE New Delhi • NAAC 'A+' Grade Accredited</span>
+              </div>
+              <div class="footer-info-item">
+                <span class="footer-info-icon">🌐</span>
+                <span>Official Portal: gndecb.ac.in</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="footer-bottom">
+            <div class="footer-bottom-copy">
+              © 2026 <strong>Guru Nanak Dev Engineering College, Bidar</strong>. All rights reserved.
+            </div>
+            <div class="footer-bottom-credit">
+              360° Smart Campus Navigation • Designed and Developed by CSE (AI&ML) Department
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <!-- ====================================================================== -->
+    <!-- 2. 360° TOUR VIEWER ENGINE (FULL EXISTING VR SYSTEM)                  -->
+    <!-- ====================================================================== -->
+    <div id="tour-viewer" class="tour-viewer hidden">
+
     <!-- WebGL Canvas for 360 Panorama -->
     <canvas id="webgl-canvas"></canvas>
 
@@ -99,7 +549,7 @@ function initApp() {
       <!-- Top Header Navbar -->
       <header class="header-nav">
         <div class="brand-section" id="btn-brand-home" title="GNDECB Virtual Tour Home">
-          <div class="brand-logo">G</div>
+          <div class="brand-logo" style="background:#ffffff; padding:2px;"><img src="/gndec_logo_web.png" alt="GNDEC" style="width:100%; height:100%; object-fit:contain; border-radius:inherit;" /></div>
           <div class="brand-text">
             <h1 id="app-main-title">GNDECB 360° TOUR</h1>
             <p>
@@ -131,6 +581,11 @@ function initApp() {
 
         <!-- Header Action Controls -->
         <div class="header-actions">
+          <!-- Return to College Portal Button -->
+          <button id="btn-return-portal" class="btn-portal-return" title="Return to College Portal Homepage">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+            <span>College Portal</span>
+          </button>
           <button id="btn-search-trigger" class="btn-search" title="Search all locations [Ctrl+K]">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             <span>Search</span>
@@ -416,6 +871,7 @@ function initApp() {
 
     <!-- Toast Notification Container -->
     <div id="toast-container" class="toast-container"></div>
+    </div> <!-- Close #tour-viewer -->
   `;
 
   updateAudioIcon();
@@ -423,7 +879,9 @@ function initApp() {
   renderSidePanel();
   initThreeViewer();
   setupEventListeners();
+  setupPortalEventListeners();
   loadScene(currentSceneId);
+  handleInitialRoute();
 }
 
 // ============================================================================
@@ -1503,6 +1961,155 @@ function setupEventListeners() {
 }
 
 // Expose scene navigation helper for testing & external controls
+
+// ============================================================================
+// PORTAL & TOUR NAVIGATION CONTROLLERS
+// ============================================================================
+
+/**
+ * Switch from Starting Homepage to 360° Tour Viewer
+ */
+function openTourViewer(targetSceneId = null, section = null) {
+  const landingPortal = document.getElementById('landing-portal');
+  const tourViewer = document.getElementById('tour-viewer');
+  if (!tourViewer) return;
+
+  if (landingPortal) {
+    landingPortal.classList.add('hidden');
+  }
+  tourViewer.classList.remove('hidden');
+
+  if (section && section !== currentSection) {
+    setExperienceSection(section);
+  }
+  if (targetSceneId && targetSceneId !== currentSceneId) {
+    loadScene(targetSceneId);
+  }
+
+  // Trigger resize to ensure WebGL canvas matches viewport
+  onWindowResize();
+
+  // Update hash
+  if (targetSceneId) {
+    window.location.hash = `#tour/${targetSceneId}`;
+  } else {
+    window.location.hash = '#tour';
+  }
+}
+
+/**
+ * Return to Starting Homepage from 360° Tour
+ */
+function openLandingPortal(updateHash = true) {
+  const landingPortal = document.getElementById('landing-portal');
+  const tourViewer = document.getElementById('tour-viewer');
+  if (!landingPortal) return;
+
+  tourViewer?.classList.add('hidden');
+  landingPortal.classList.remove('hidden');
+  landingPortal.scrollTo({ top: 0, behavior: 'smooth' });
+
+  if (updateHash) {
+    window.location.hash = '#home';
+  }
+}
+
+/**
+ * Check initial URL hash to determine whether to show tour or starting portal
+ */
+function handleInitialRoute() {
+  const hash = window.location.hash;
+  if (hash.startsWith('#tour')) {
+    const parts = hash.split('/');
+    const targetScene = parts[1] || null;
+    openTourViewer(targetScene);
+  } else {
+    openLandingPortal(false);
+  }
+}
+
+/**
+ * Setup event listeners for the starting portal & header navigation
+ */
+function setupPortalEventListeners() {
+  // START NAVIGATION buttons
+  document.getElementById('btn-nav-start-tour')?.addEventListener('click', () => openTourViewer());
+  document.getElementById('btn-hero-start-nav')?.addEventListener('click', () => openTourViewer());
+  document.getElementById('btn-nav-mobile-pill')?.addEventListener('click', () => openTourViewer());
+  document.getElementById('btn-nav-mobile-menu-start')?.addEventListener('click', () => {
+    document.getElementById('nav-links-menu')?.classList.remove('mobile-open');
+    openTourViewer();
+  });
+
+  // Return to portal button in 360 tour header
+  document.getElementById('btn-return-portal')?.addEventListener('click', () => openLandingPortal());
+
+  // Brand Logo click in tour header returns to starting portal
+  document.getElementById('btn-brand-home')?.addEventListener('click', () => openLandingPortal());
+
+  // Mobile navigation drawer toggle
+  const mobileToggle = document.getElementById('btn-nav-mobile-toggle');
+  const navMenu = document.getElementById('nav-links-menu');
+  if (mobileToggle && navMenu) {
+    mobileToggle.addEventListener('click', () => {
+      navMenu.classList.toggle('mobile-open');
+    });
+
+    navMenu.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        navMenu.classList.remove('mobile-open');
+      });
+    });
+  }
+
+  // Quick jump & scene launch buttons across the starting portal
+  document.querySelectorAll('[data-scene]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const targetScene = btn.dataset.scene;
+      const targetSection = btn.dataset.section || null;
+      if (targetScene) {
+        openTourViewer(targetScene, targetSection);
+      }
+    });
+  });
+
+  // Footer scene links
+  document.querySelectorAll('.footer-scene-link').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const targetScene = link.dataset.scene;
+      const targetSection = link.dataset.section || null;
+      if (targetScene) {
+        openTourViewer(targetScene, targetSection);
+      }
+    });
+  });
+
+  // Smooth hashchange handling for browser Back/Forward navigation
+  window.addEventListener('hashchange', () => {
+    const hash = window.location.hash;
+    if (hash.startsWith('#tour')) {
+      const parts = hash.split('/');
+      const targetScene = parts[1] || null;
+      const tourViewer = document.getElementById('tour-viewer');
+      if (tourViewer && tourViewer.classList.contains('hidden')) {
+        openTourViewer(targetScene);
+      } else if (targetScene && targetScene !== currentSceneId) {
+        loadScene(targetScene);
+      }
+    } else if (hash === '#home' || hash === '' || hash.startsWith('#hero') || hash.startsWith('#about') || hash.startsWith('#department') || hash.startsWith('#campus')) {
+      const landingPortal = document.getElementById('landing-portal');
+      if (landingPortal && landingPortal.classList.contains('hidden')) {
+        openLandingPortal(false);
+      }
+    }
+  });
+}
+
+// Expose controllers on window for external access
+window.openTourViewer = openTourViewer;
+window.openLandingPortal = openLandingPortal;
+
 window.loadScene = loadScene;
 window.setCameraLook = (lonDeg, latDeg = 0) => {
   targetLon = lonDeg;

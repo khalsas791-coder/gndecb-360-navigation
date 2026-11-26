@@ -566,7 +566,7 @@ body, html {
 .elevator-panel {
   position: absolute;
   right: 1.5rem;
-  top: 50%;
+  top: 45%;
   transform: translateY(-50%);
   background: var(--bg-glass);
   backdrop-filter: blur(20px);
@@ -578,7 +578,7 @@ body, html {
   gap: 0.35rem;
   z-index: 15;
   box-shadow: var(--shadow-card);
-  max-height: 75vh;
+  max-height: calc(100vh - 280px);
   overflow-y: auto;
 }
 
@@ -1335,6 +1335,25 @@ body, html {
 }
 
 /* Responsive Breakpoints */
+@media (max-width: 1080px) and (min-width: 769px) {
+  .header-nav {
+    padding: 0.5rem 0.85rem;
+    gap: 0.45rem;
+  }
+  .scene-switcher {
+    max-width: 240px;
+  }
+  #btn-book {
+    display: none;
+  }
+  .btn-search .search-kbd {
+    display: none;
+  }
+  .btn-search {
+    padding: 0.45rem 0.75rem;
+  }
+}
+
 @media (max-width: 1024px) {
   .scene-switcher {
     max-width: 320px;
