@@ -1055,7 +1055,7 @@ export const HOSTEL_VIEWPOINTS = {
     hasImage: true,
     floorLabel: 'MAIN BLK 1',
     breadcrumb: ['Hostel', 'Perimeter', 'Way to Main Block 1'],
-    minimapPos: { top: '92%', left: '35%' },
+    minimapPos: { top: '20%', left: '75%' },
     connections: {
       forward: 'way_to_main_block_2',
       left: 'mechanical_engineering_branch',
@@ -1113,7 +1113,7 @@ export const HOSTEL_VIEWPOINTS = {
     initialLon: 0,
     floorLabel: 'MAIN BLK 2',
     breadcrumb: ['Hostel', 'Perimeter', 'Way to Main Block 2'],
-    minimapPos: { top: '90%', left: '32%' },
+    minimapPos: { top: '32%', left: '62%' },
     connections: {
       forward: 'way_to_main_block_3',
       back: 'way_to_main_block_1',
@@ -1171,7 +1171,7 @@ export const HOSTEL_VIEWPOINTS = {
     initialLon: 0,
     floorLabel: 'MAIN BLK 3',
     breadcrumb: ['Hostel', 'Perimeter', 'Way to Main Block 3'],
-    minimapPos: { top: '88%', left: '28%' },
+    minimapPos: { top: '42%', left: '54%' },
     connections: {
       forward: 'way_to_main_block_4',
       back: 'way_to_main_block_2'
@@ -1218,7 +1218,7 @@ export const HOSTEL_VIEWPOINTS = {
     initialLon: 0,
     floorLabel: 'MAIN BLK 4',
     breadcrumb: ['Hostel', 'Perimeter', 'Way to Main Block 4'],
-    minimapPos: { top: '86%', left: '25%' },
+    minimapPos: { top: '52%', left: '48%' },
     connections: {
       forward: 'way_to_2nd_gate',
       back: 'way_to_main_block_3',
@@ -1276,7 +1276,7 @@ export const HOSTEL_VIEWPOINTS = {
     initialLon: 0,
     floorLabel: '2ND GATE 1',
     breadcrumb: ['Hostel', 'Perimeter', 'Way to Campus 2nd Gate 1'],
-    minimapPos: { top: '84%', left: '20%' },
+    minimapPos: { top: '68%', left: '38%' },
     connections: {
       forward: 'way_to_2nd_gate_2',
       back: 'way_to_main_block_4'
@@ -1323,7 +1323,7 @@ export const HOSTEL_VIEWPOINTS = {
     initialLon: 180,
     floorLabel: '2ND GATE 2',
     breadcrumb: ['Hostel', 'Perimeter', 'Way to Campus 2nd Gate 2'],
-    minimapPos: { top: '82%', left: '16%' },
+    minimapPos: { top: '76%', left: '28%' },
     connections: {
       forward: 'campus_2nd_gate',
       back: 'way_to_2nd_gate'
@@ -1370,7 +1370,7 @@ export const HOSTEL_VIEWPOINTS = {
     initialLon: 180,
     floorLabel: 'CAMPUS GATE 2',
     breadcrumb: ['Hostel', 'Gates', 'Campus 2nd Gate'],
-    minimapPos: { top: '80%', left: '12%' },
+    minimapPos: { top: '80%', left: '19%' },
     connections: {
       back: 'way_to_2nd_gate_2',
       forward: 'way_to_2nd_gate_2',

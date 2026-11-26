@@ -509,6 +509,20 @@ function initApp() {
     <!-- WebGL Canvas for 360 Panorama -->
     <canvas id="webgl-canvas"></canvas>
 
+    <!-- Top & Bottom Gradient Vignette for UI contrast over bright skies & dark foliage -->
+    <div class="tour-vignette" aria-hidden="true"></div>
+
+    <!-- Smooth Loading Curtain & Skeleton -->
+    <div id="scene-loader-curtain" class="scene-loader-curtain">
+      <div id="loader-curtain-bg" class="loader-curtain-bg"></div>
+      <div class="loader-curtain-vignette"></div>
+      <div class="loader-curtain-content">
+        <div class="loader-spinner-ring"></div>
+        <div class="loader-node-label" id="loader-node-label">Loading 360° Scene...</div>
+        <div class="loader-node-sub" id="loader-node-sub">HD Panorama</div>
+      </div>
+    </div>
+
     <!-- Texture Loading Spinner -->
     <div id="loader-overlay" class="loader-overlay">
       <div class="spinner"></div>
@@ -695,21 +709,60 @@ function initApp() {
         </div>
 
         <!-- Interactive 2D Minimap -->
-        <div class="minimap-card">
+        <div class="minimap-card" id="minimap-floating-card">
           <div class="minimap-header">
-            <span id="minimap-section-tag">Campus Layout</span>
-            <span id="minimap-level">GATE 0</span>
+            <div class="minimap-title-wrap">
+              <span class="minimap-radar-dot"></span>
+              <span id="minimap-section-tag">Campus Layout</span>
+            </div>
+            <span id="minimap-level">GATE 2</span>
           </div>
           <div class="minimap-body">
-            <svg class="minimap-svg" viewBox="0 0 100 100">
-              <rect x="5" y="5" width="90" height="90" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" rx="4" />
-              <path d="M 5,35 L 95,35 M 5,65 L 95,65 M 40,5 L 40,95 M 70,5 L 70,95" stroke="rgba(255,255,255,0.1)" stroke-width="1" />
-              <text x="20" y="20" fill="rgba(255,255,255,0.3)" font-size="5" text-anchor="middle">GATE 1</text>
-              <text x="55" y="50" fill="rgba(0,240,255,0.5)" font-size="5" font-weight="bold" text-anchor="middle">GATE 2</text>
-              <text x="85" y="80" fill="rgba(255,255,255,0.3)" font-size="5" text-anchor="middle">COURTYARD</text>
+            <svg class="minimap-svg" viewBox="0 0 100 100" id="minimap-svg-canvas">
+              <defs>
+                <linearGradient id="route-blue-grad" x1="0%" y1="100%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#00f0ff" />
+                  <stop offset="50%" stop-color="#2563eb" />
+                  <stop offset="100%" stop-color="#38bdf8" />
+                </linearGradient>
+              </defs>
+              <rect x="4" y="4" width="92" height="92" rx="6" fill="rgba(8, 14, 28, 0.75)" stroke="rgba(255,255,255,0.18)" stroke-width="1.2" />
+              <path d="M 4,32 L 96,32 M 4,68 L 96,68 M 32,4 L 32,96 M 68,4 L 68,96" stroke="rgba(255,255,255,0.06)" stroke-width="0.8" stroke-dasharray="2,2" />
+              
+              <!-- Campus landmarks -->
+              <rect x="8" y="8" width="22" height="16" rx="2" fill="rgba(0, 240, 255, 0.08)" stroke="rgba(0, 240, 255, 0.25)" stroke-width="0.8" />
+              <text x="19" y="18" fill="rgba(255,255,255,0.4)" font-size="3.5" font-weight="600" text-anchor="middle">GATE 1</text>
+              
+              <rect x="70" y="8" width="22" height="20" rx="2" fill="rgba(255, 255, 255, 0.05)" stroke="rgba(255, 255, 255, 0.15)" stroke-width="0.8" />
+              <text x="81" y="19" fill="rgba(255,255,255,0.4)" font-size="3.5" font-weight="600" text-anchor="middle">MAIN BLOCK</text>
+              
+              <rect x="8" y="70" width="22" height="20" rx="2" fill="rgba(0, 240, 255, 0.15)" stroke="rgba(0, 240, 255, 0.4)" stroke-width="0.8" />
+              <text x="19" y="81" fill="rgba(0, 240, 255, 0.9)" font-size="3.5" font-weight="bold" text-anchor="middle">GATE 2</text>
+              
+              <rect x="68" y="68" width="24" height="22" rx="2" fill="rgba(255, 255, 255, 0.05)" stroke="rgba(255, 255, 255, 0.15)" stroke-width="0.8" />
+              <text x="80" y="80" fill="rgba(255,255,255,0.4)" font-size="3.5" font-weight="600" text-anchor="middle">HOSTEL</text>
+              
+              <circle cx="50" cy="50" r="13" fill="rgba(37, 99, 235, 0.08)" stroke="rgba(37, 99, 235, 0.2)" stroke-width="0.8" />
+              <text x="50" y="51" fill="rgba(255,255,255,0.35)" font-size="3.2" text-anchor="middle">AVENUE</text>
+
+              <!-- Route Path: Blue Glowing Path -->
+              <path id="minimap-route-glow" d="M 19,80 L 28,76 L 38,68 L 48,52 L 54,42 L 62,32 L 75,20 L 81,18" fill="none" stroke="rgba(0, 240, 255, 0.45)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" />
+              <path id="minimap-route-line" d="M 19,80 L 28,76 L 38,68 L 48,52 L 54,42 L 62,32 L 75,20 L 81,18" fill="none" stroke="url(#route-blue-grad)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+              
+              <!-- Waypoints on the blue route line -->
+              <circle cx="19" cy="80" r="2.2" fill="#00f0ff" stroke="#ffffff" stroke-width="0.8" />
+              <circle cx="28" cy="76" r="1.5" fill="#38bdf8" />
+              <circle cx="38" cy="68" r="1.5" fill="#38bdf8" />
+              <circle cx="48" cy="52" r="1.5" fill="#38bdf8" />
+              <circle cx="54" cy="42" r="1.5" fill="#38bdf8" />
+              <circle cx="62" cy="32" r="1.5" fill="#38bdf8" />
+              <circle cx="75" cy="20" r="1.5" fill="#38bdf8" />
+              <circle cx="81" cy="18" r="2.2" fill="#2563eb" stroke="#ffffff" stroke-width="0.8" />
             </svg>
             <div id="minimap-cone" class="minimap-cone"></div>
-            <div id="minimap-pin" class="minimap-pin"></div>
+            <div id="minimap-pin" class="minimap-pin">
+              <span class="minimap-pin-pulse"></span>
+            </div>
           </div>
         </div>
       </footer>
@@ -895,7 +948,8 @@ function initThreeViewer() {
   camera = new THREE.PerspectiveCamera(fov, window.innerWidth / window.innerHeight, 1, 1100);
   camera.target = new THREE.Vector3(0, 0, 0);
 
-  const geometry = new THREE.SphereGeometry(500, 60, 40);
+  // High-fidelity sphere geometry: 128 x 96 segments eliminates geometric polygon distortion
+  const geometry = new THREE.SphereGeometry(500, 128, 96);
   geometry.scale(-1, 1, 1); // Invert sphere so texture displays on inner surface
 
   textureLoader = new THREE.TextureLoader();
@@ -905,9 +959,16 @@ function initThreeViewer() {
   sphereMesh = new THREE.Mesh(geometry, material);
   scene.add(sphereMesh);
 
-  renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, preserveDrawingBuffer: true });
-  renderer.setPixelRatio(window.devicePixelRatio);
+  // WebGL Renderer configured for high-performance and sharp native display pixel ratio
+  renderer = new THREE.WebGLRenderer({
+    canvas: canvas,
+    antialias: true,
+    powerPreference: 'high-performance',
+    preserveDrawingBuffer: true
+  });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.5));
   renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
 
   canvas.addEventListener('pointerdown', onPointerDown);
   window.addEventListener('resize', onWindowResize);
@@ -1095,7 +1156,7 @@ function renderSidePanel() {
 
 /**
  * High-Performance Asynchronous Texture Loader with Memory Caching
- * Omits mipmaps on equirectangular spheres to save 33% GPU memory and eliminate upload hitching.
+ * Optimized for maximum photo sphere quality: mipmaps enabled, linear mipmap filtering, anisotropy = 16
  */
 function getOrLoadTexture(url) {
   if (textureCache.has(url)) {
@@ -1110,9 +1171,19 @@ function getOrLoadTexture(url) {
       url,
       (texture) => {
         texture.colorSpace = THREE.SRGBColorSpace;
-        texture.generateMipmaps = false;
-        texture.minFilter = THREE.LinearFilter;
+        // PHOTO SPHERE VIEWER OPTIMIZATIONS:
+        // 1. Enable mipmaps to eliminate shimmering and pixelation when zoomed out
+        texture.generateMipmaps = true;
+        // 2. Linear mipmap linear minFilter for sharpest, smoothest texture filtering
+        texture.minFilter = THREE.LinearMipmapLinearFilter;
         texture.magFilter = THREE.LinearFilter;
+        // 3. Set anisotropy to 16 to keep edges razor-sharp at oblique angles
+        const maxAniso = renderer ? renderer.capabilities.getMaxAnisotropy() : 16;
+        texture.anisotropy = Math.min(16, maxAniso || 16);
+        texture.wrapS = THREE.ClampToEdgeWrapping;
+        texture.wrapT = THREE.ClampToEdgeWrapping;
+        texture.needsUpdate = true;
+
         textureCache.set(url, texture);
         pendingTextureLoads.delete(url);
         resolve(texture);
@@ -1161,22 +1232,33 @@ function preloadNeighbors(viewpoint) {
 
 /**
  * Smoothly apply texture to the 360 sphere without visual stutter
+ * Automatically aligns camera yaw and pitch down the pathway
  */
 function applySceneTexture(texture, viewpoint, arrivalHeading = null) {
   sphereMesh.material.color.setHex(0xffffff);
   sphereMesh.material.map = texture;
   sphereMesh.material.needsUpdate = true;
   
+  // Floor/building transitions: automatically points camera straight down the path
   let newLon = 180;
   if (arrivalHeading !== null && arrivalHeading !== undefined) {
     newLon = arrivalHeading;
+  } else if (viewpoint.yaw !== undefined) {
+    newLon = viewpoint.yaw;
+  } else if (viewpoint.targetHeading !== undefined) {
+    newLon = viewpoint.targetHeading;
   } else if (viewpoint.initialLon !== undefined) {
     newLon = viewpoint.initialLon;
   }
 
-  const newLat = viewpoint.initialLat !== undefined ? viewpoint.initialLat : 0;
+  let newLat = 0;
+  if (viewpoint.pitch !== undefined) {
+    newLat = viewpoint.pitch;
+  } else if (viewpoint.initialLat !== undefined) {
+    newLat = viewpoint.initialLat;
+  }
 
-  // Instantly lock camera heading to target direction so navigation is instantaneous with zero delay or spinning
+  // Instantly lock camera heading to target direction so user doesn't have to manually look for the path
   lon = newLon;
   targetLon = newLon;
   lat = newLat;
@@ -1189,7 +1271,8 @@ function applySceneTexture(texture, viewpoint, arrivalHeading = null) {
 }
 
 /**
- * Load a specific viewpoint with instant cache delivery and background preloading
+ * Load a specific viewpoint with instant cache delivery, blurred loading skeleton curtain,
+ * and smooth crossfades
  */
 export function loadScene(sceneId, arrivalHeading = null) {
   const targetViewpoint = getViewpoint(sceneId);
@@ -1239,6 +1322,10 @@ export function loadScene(sceneId, arrivalHeading = null) {
   // Handle Real Panorama vs Pending Panorama
   const pendingOverlay = document.getElementById('panorama-pending-overlay');
   const webglCanvas = document.getElementById('webgl-canvas');
+  const loaderCurtain = document.getElementById('scene-loader-curtain');
+  const loaderCurtainBg = document.getElementById('loader-curtain-bg');
+  const loaderNodeLabel = document.getElementById('loader-node-label');
+  const loaderNodeSub = document.getElementById('loader-node-sub');
 
   if (targetViewpoint.hasImage && targetViewpoint.image) {
     if (pendingOverlay) pendingOverlay.classList.remove('active');
@@ -1252,6 +1339,7 @@ export function loadScene(sceneId, arrivalHeading = null) {
     if (isCached) {
       if (loaderTimeout) { clearTimeout(loaderTimeout); loaderTimeout = null; }
       showLoader(false);
+      if (loaderCurtain) loaderCurtain.classList.remove('active');
       applySceneTexture(textureCache.get(imageUrl), targetViewpoint, arrivalHeading);
       preloadNeighbors(targetViewpoint);
       return;
@@ -1261,7 +1349,21 @@ export function loadScene(sceneId, arrivalHeading = null) {
     const hotspotsContainer = document.getElementById('hotspots-overlay');
     if (hotspotsContainer) hotspotsContainer.innerHTML = '';
 
-    // Only show loader if fetching over the network takes longer than 250ms
+    // Show dark, blurred CSS background skeleton of the image and centered spinner
+    if (loaderCurtain) {
+      if (loaderCurtainBg) {
+        loaderCurtainBg.style.backgroundImage = `url("${imageUrl}")`;
+      }
+      if (loaderNodeLabel) {
+        loaderNodeLabel.textContent = targetViewpoint.name;
+      }
+      if (loaderNodeSub) {
+        loaderNodeSub.textContent = targetViewpoint.subtitle || 'High-Definition Panorama';
+      }
+      loaderCurtain.classList.add('active');
+    }
+
+    // Secondary status pill if loading takes longer than 250ms
     if (loaderTimeout) clearTimeout(loaderTimeout);
     loaderTimeout = setTimeout(() => {
       if (activeLoadToken === thisLoadToken) {
@@ -1274,20 +1376,33 @@ export function loadScene(sceneId, arrivalHeading = null) {
         if (activeLoadToken !== thisLoadToken) return;
         if (loaderTimeout) { clearTimeout(loaderTimeout); loaderTimeout = null; }
         showLoader(false);
+
+        // Apply texture and camera heading alignment
         applySceneTexture(texture, targetViewpoint, arrivalHeading);
         preloadNeighbors(targetViewpoint);
+
+        // Crossfade to new 360 node only once high-res texture is fully loaded
+        if (loaderCurtain) {
+          loaderCurtain.classList.remove('active');
+        }
       })
       .catch((err) => {
         if (activeLoadToken !== thisLoadToken) return;
         if (loaderTimeout) { clearTimeout(loaderTimeout); loaderTimeout = null; }
         console.warn(`[TextureLoader] Image failed to load at ${imageUrl}:`, err);
         showLoader(false);
+        if (loaderCurtain) {
+          loaderCurtain.classList.remove('active');
+        }
         showToast(`Image not found at ${imageUrl}`);
       });
   } else {
     // Pending Panorama state (e.g. campus location awaiting photography)
     if (loaderTimeout) { clearTimeout(loaderTimeout); loaderTimeout = null; }
     showLoader(false);
+    if (loaderCurtain) {
+      loaderCurtain.classList.remove('active');
+    }
     if (webglCanvas) webglCanvas.classList.add('blurred');
     sphereMesh.material.map = null;
     sphereMesh.material.color.setHex(0x0a0f1d);
@@ -1371,24 +1486,20 @@ function renderHotspots() {
           </svg>
         </div>
         <div class="hotspot-label">
-          <div>
-            <div>${hs.title}</div>
-            <span>${hs.subtitle}</span>
-          </div>
+          <div class="hotspot-title">${hs.title}</div>
+          <span class="hotspot-sub">${hs.subtitle}</span>
         </div>
       `;
     } else {
       el.innerHTML = `
         <div class="hotspot-pulse">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>
           </svg>
         </div>
         <div class="hotspot-label">
-          <div>
-            <div>${hs.title}</div>
-            <span>${hs.subtitle}</span>
-          </div>
+          <div class="hotspot-title">${hs.title}</div>
+          <span class="hotspot-sub">${hs.subtitle}</span>
         </div>
       `;
     }
@@ -1549,9 +1660,11 @@ function onDocumentMouseWheel(event) {
 }
 
 function onWindowResize() {
+  if (!camera || !renderer) return;
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.5));
 }
 
 function animate() {
@@ -1847,7 +1960,15 @@ function setupEventListeners() {
       const targetId = e.currentTarget.dataset.target;
       const turnDir = e.currentTarget.dataset.turn;
       if (targetId) {
-        loadScene(targetId);
+        const currVp = getViewpoint(currentSceneId);
+        let heading = null;
+        if (currVp && currVp.hotspots) {
+          const matchHs = currVp.hotspots.find(h => h.targetScene === targetId);
+          if (matchHs && matchHs.targetHeading !== undefined) {
+            heading = matchHs.targetHeading;
+          }
+        }
+        loadScene(targetId, heading);
       } else if (turnDir) {
         if (turnDir === 'left') targetLon -= 45;
         if (turnDir === 'right') targetLon += 45;
