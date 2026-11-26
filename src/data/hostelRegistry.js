@@ -3321,37 +3321,39 @@ export const HOSTEL_VIEWPOINTS = {
     breadcrumb: ['Hostel', 'Ground Floor', 'Lobby'],
     minimapPos: { top: '50%', left: '50%' },
     connections: {
-      forward: 'floor1',
-      back: 'exterior',
-      right: 'mess'
+      forward: 'floor2',
+      back: 'gate2'
     },
     hotspots: [
+      {
+        lon: 318,
+        lat: -12,
+        type: 'arrow',
+        arrowDir: 'forward',
+        title: '🏢 Walk to Floor 2 Main Entrance & Landing',
+        subtitle: 'Ascend stairs directly to Floor 2 entrance & landing',
+        targetScene: 'floor2',
+        targetHeading: 180
+      },
       {
         lon: 0,
         lat: -12,
         type: 'arrow',
-        arrowDir: 'back',
-        title: 'Step Outside to Hostel Courtyard',
-        subtitle: 'Exit to courtyard & bicycle racks',
-        targetScene: 'exterior'
-      },
-      {
-        lon: -95,
-        lat: -10,
-        type: 'arrow',
-        arrowDir: 'right',
-        title: 'Hostel Mess & Dining Hall',
-        subtitle: 'Enter cafeteria dining section',
-        targetScene: 'mess'
-      },
-      {
-        lon: 110,
-        lat: -10,
-        type: 'arrow',
         arrowDir: 'forward',
-        title: 'Stairs & Lifts to Upper Floors',
-        subtitle: 'Ascend to Floor 1 dorm rooms',
-        targetScene: 'floor1'
+        title: '🏢 Walk to Floor 2 Main Entrance & Landing',
+        subtitle: 'Proceed directly to Floor 2 entrance & landing',
+        targetScene: 'floor2',
+        targetHeading: 180
+      },
+      {
+        lon: 180,
+        lat: -14,
+        type: 'arrow',
+        arrowDir: 'back',
+        title: '🚪 Walk Back to Hostel Gate 2',
+        subtitle: 'Exit main lobby to Gate 2 courtyard & approach',
+        targetScene: 'gate2',
+        targetHeading: 118
       },
       {
         lon: 190,
@@ -3600,7 +3602,7 @@ export const HOSTEL_VIEWPOINTS = {
     minimapPos: { top: '35%', left: '42%' },
     connections: {
       forward: 'f2_corridor1',
-      back: 'floor1',
+      back: 'lobby',
       right: 'floor3'
     },
     hotspots: [
@@ -3618,9 +3620,10 @@ export const HOSTEL_VIEWPOINTS = {
         lat: -14,
         type: 'arrow',
         arrowDir: 'back',
-        title: 'Descend to Floor 1',
-        subtitle: 'Take stairs down to Floor 1 corridor',
-        targetScene: 'floor1'
+        title: '🏢 Descend Stairs to Ground Floor Lobby Hub',
+        subtitle: 'Take stairs down to main ground reception & lobby',
+        targetScene: 'lobby',
+        targetHeading: 180
       },
       {
         lon: 90,
@@ -3654,7 +3657,7 @@ export const HOSTEL_VIEWPOINTS = {
     minimapPos: { top: '35%', left: '42%' },
     connections: {
       forward: 'f2_corridor1',
-      back: 'floor1',
+      back: 'lobby',
       right: 'floor3'
     },
     hotspots: [
@@ -3672,9 +3675,10 @@ export const HOSTEL_VIEWPOINTS = {
         lat: -14,
         type: 'arrow',
         arrowDir: 'back',
-        title: 'Descend to Floor 1',
-        subtitle: 'Take stairs down to Floor 1 corridor',
-        targetScene: 'floor1'
+        title: '🏢 Descend Stairs to Ground Floor Lobby Hub',
+        subtitle: 'Take stairs down to main ground reception & lobby',
+        targetScene: 'lobby',
+        targetHeading: 180
       },
       {
         lon: 90,
