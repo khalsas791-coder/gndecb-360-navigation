@@ -3142,6 +3142,7 @@ export const HOSTEL_VIEWPOINTS = {
     minimapPos: { top: '90%', left: '42%' },
     connections: {
       forward: 'way_to_mess',
+      left: 'lobby',
       back: 'gate1',
       right: 'outer_gym'
     },
@@ -3154,6 +3155,16 @@ export const HOSTEL_VIEWPOINTS = {
         title: '🍽️ Walk to Hostel Mess',
         subtitle: 'Follow pathway towards hostel mess & dining hall',
         targetScene: 'way_to_mess',
+        targetHeading: 180
+      },
+      {
+        lon: 147,
+        lat: -14,
+        type: 'arrow',
+        arrowDir: 'forward',
+        title: '🏢 Walk to Ground Floor Lobby Hub',
+        subtitle: 'Enter main 5-story hostel reception & central lobby',
+        targetScene: 'lobby',
         targetHeading: 180
       },
       {
@@ -3425,7 +3436,7 @@ export const HOSTEL_VIEWPOINTS = {
         targetHeading: 180
       },
       {
-        lon: 270,
+        lon: 248,
         lat: -12,
         type: 'arrow',
         arrowDir: 'forward',
