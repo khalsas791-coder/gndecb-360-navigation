@@ -3141,10 +3141,9 @@ export const HOSTEL_VIEWPOINTS = {
     breadcrumb: ['Hostel', 'Gates', 'Gate 2'],
     minimapPos: { top: '90%', left: '42%' },
     connections: {
-      forward: 'exterior',
+      forward: 'way_to_mess',
       back: 'gate1',
-      right: 'outer_gym',
-      left: 'way_to_mess'
+      right: 'outer_gym'
     },
     hotspots: [
       {
@@ -3152,9 +3151,10 @@ export const HOSTEL_VIEWPOINTS = {
         lat: -14,
         type: 'arrow',
         arrowDir: 'forward',
-        title: 'Walk to 5-Story Hostel Courtyard',
-        subtitle: 'Approach main building courtyard',
-        targetScene: 'exterior'
+        title: '🍽️ Walk to Hostel Mess',
+        subtitle: 'Follow pathway towards hostel mess & dining hall',
+        targetScene: 'way_to_mess',
+        targetHeading: 180
       },
       {
         lon: 90,
@@ -3164,15 +3164,6 @@ export const HOSTEL_VIEWPOINTS = {
         title: '🏋️‍♂️ Walk to Outer Gym',
         subtitle: 'Visit outdoor fitness & workout area',
         targetScene: 'outer_gym'
-      },
-      {
-        lon: 270,
-        lat: -12,
-        type: 'arrow',
-        arrowDir: 'left',
-        title: '🍽️ Walk to Hostel Mess Pathway',
-        subtitle: 'Follow pathway towards hostel mess & dining hall',
-        targetScene: 'way_to_mess'
       },
       {
         lon: 0,
