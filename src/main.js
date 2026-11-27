@@ -562,6 +562,17 @@ function initApp() {
     <div class="ui-overlay">
       <!-- Top Header Navbar -->
       <header class="header-nav">
+        <!-- Google Maps Mobile Capsule (visible on mobile only) -->
+        <div class="header-search-capsule" id="header-search-capsule" role="button" tabindex="0" title="Tap to search any campus facility">
+          <div class="capsule-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </div>
+          <div class="capsule-text">
+            <span class="capsule-title" id="mobile-scene-title">Campus 2nd Gate</span>
+            <span class="capsule-sub" id="mobile-scene-sub">Campus 360° • Tap to search</span>
+          </div>
+        </div>
+
         <div class="brand-section" id="btn-brand-home" title="GNDECB Virtual Tour Home">
           <div class="brand-logo" style="background:#ffffff; padding:2px;"><img src="/gndec_logo_web.png" alt="GNDEC" style="width:100%; height:100%; object-fit:contain; border-radius:inherit;" /></div>
           <div class="brand-text">
@@ -598,8 +609,15 @@ function initApp() {
           <!-- Return to College Portal Button -->
           <button id="btn-return-portal" class="btn-portal-return" title="Return to College Portal Homepage">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-            <span>College Portal</span>
+            <span class="portal-btn-label">College Portal</span>
           </button>
+
+          <!-- Mobile Micro Mode Switcher (visible on mobile only) -->
+          <div class="experience-switcher-micro" id="mobile-mode-switcher">
+            <button type="button" class="exp-micro-btn ${currentSection === 'campus' ? 'active' : ''}" data-mode="campus" title="Switch to Campus 360°">🏛️</button>
+            <button type="button" class="exp-micro-btn ${currentSection === 'hostel' ? 'active' : ''}" data-mode="hostel" title="Switch to Hostel 360°">🏠</button>
+          </div>
+
           <button id="btn-search-trigger" class="btn-search" title="Search all locations [Ctrl+K]">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             <span>Search</span>
@@ -622,7 +640,7 @@ function initApp() {
 
           <!-- Mobile Quick Drawer & Menu Buttons -->
           <button id="btn-mobile-drawer" class="icon-btn mobile-only-btn" title="Locations & Floors Directory">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>
             <span class="dock-tooltip">Directory & Floors</span>
           </button>
 
@@ -632,6 +650,39 @@ function initApp() {
           </button>
         </div>
       </header>
+
+      <!-- Google Maps Vertical Level / Floor Selector (Mobile only) -->
+      <div class="mobile-floor-picker" id="mobile-floor-picker" aria-label="Floor Level Selector"></div>
+
+      <!-- Google Maps Bottom Place Sheet (Mobile only) -->
+      <div class="mobile-place-sheet" id="mobile-place-sheet">
+        <div class="place-sheet-handle"></div>
+        <div class="place-sheet-main">
+          <div class="place-sheet-info" id="place-sheet-info" role="button" tabindex="0">
+            <div class="place-sheet-title-row">
+              <h3 class="place-sheet-title" id="place-sheet-title">Campus 2nd Gate</h3>
+              <span class="place-sheet-badge" id="place-sheet-badge">Campus</span>
+            </div>
+            <p class="place-sheet-sub" id="place-sheet-sub">Secondary Access Gate & Sports Complex Approach</p>
+          </div>
+          <div class="place-sheet-actions">
+            <button type="button" class="sheet-action-pill primary" id="sheet-btn-explore" title="Open All Locations">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>
+              <span>Explore</span>
+            </button>
+            <button type="button" class="sheet-action-pill" id="sheet-btn-search" title="Search Campus">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <span>Search</span>
+            </button>
+            <button type="button" class="sheet-action-pill compass-pill" id="sheet-btn-north" title="Reorient to True North">
+              <div class="mini-compass-icon" id="mini-compass-dial">
+                <div class="mini-compass-needle"></div>
+              </div>
+              <span id="sheet-heading-label">180° S</span>
+            </button>
+          </div>
+        </div>
+      </div>
 
       <!-- Side Quick Jump Panel (Elevator / Campus Directory) -->
       <aside class="elevator-panel" id="side-navigation-panel"></aside>
@@ -992,6 +1043,9 @@ function setExperienceSection(section) {
   // Update tabs UI
   document.getElementById('tab-campus')?.classList.toggle('active', section === 'campus');
   document.getElementById('tab-hostel')?.classList.toggle('active', section === 'hostel');
+  document.querySelectorAll('.exp-micro-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.mode === section);
+  });
 
   // Update brand header
   const appMainTitle = document.getElementById('app-main-title');
@@ -1155,6 +1209,82 @@ function renderSidePanel() {
 }
 
 /**
+ * Render Google Maps vertical indoor level / floor selector for mobile
+ */
+function renderMobileFloorPicker() {
+  const container = document.getElementById('mobile-floor-picker');
+  if (!container) return;
+
+  if (currentSection === 'hostel') {
+    const levels = [
+      { id: 'f5_entrance', label: '5', title: 'Floor 5 & Gurudwara Sahib', scenes: ['f5_entrance', 'f5_corridor1', 'f5_corridor2', 'f5_corridor3', 'f5_corridor7', 'f5_corridor8', 'f5_gurudwara', 'room_525'] },
+      { id: 'floor4', label: '4', title: 'Floor 4 Corridor', scenes: ['floor4'] },
+      { id: 'floor3', label: '3', title: 'Floor 3 Residence Corridor', scenes: ['floor3'] },
+      { id: 'floor2', label: '2', title: 'Floor 2 Residence Corridor', scenes: ['floor2', 'f2_entrance', 'f2_corridor1', 'f2_corridor2', 'f2_corridor3'] },
+      { id: 'lobby', label: 'G', title: 'Ground Floor Lobby & Reception', scenes: ['lobby', 'exterior', 'outer_gym', 'gate0', 'gate1', 'gate2', 'way_to_gym', 'main_gym'] },
+      { id: 'mess', label: 'M', title: 'Hostel Dining Hall & Mess', scenes: ['mess', 'mess2'] }
+    ];
+
+    container.innerHTML = levels.map(lvl => {
+      const isActive = lvl.scenes.includes(currentSceneId);
+      return `
+        <button type="button" class="floor-level-btn ${isActive ? 'active' : ''}" data-scene="${lvl.id}" title="${lvl.title}">
+          <span>${lvl.label}</span>
+        </button>
+      `;
+    }).join('');
+  } else {
+    const levels = [
+      { id: 'campus_main_gate', label: 'MG', title: 'College Main Gate', scenes: ['campus_main_gate'] },
+      { id: 'campus_second_gate', label: '2G', title: 'College 2nd Gate', scenes: ['campus_second_gate', 'campus_parking'] },
+      { id: 'campus_main_block', label: 'MB', title: 'Main Academic Block', scenes: ['campus_main_block'] },
+      { id: 'campus_canteen', label: 'CAN', title: 'Central Canteen', scenes: ['campus_canteen'] },
+      { id: 'campus_auditorium', label: 'AUD', title: 'University Auditorium', scenes: ['campus_auditorium'] },
+      { id: 'campus_ground', label: 'GRD', title: 'Athletics Ground', scenes: ['campus_ground', 'campus_sports_room'] }
+    ];
+
+    container.innerHTML = levels.map(lvl => {
+      const isActive = lvl.scenes.includes(currentSceneId);
+      return `
+        <button type="button" class="floor-level-btn ${isActive ? 'active' : ''}" data-scene="${lvl.id}" title="${lvl.title}">
+          <span>${lvl.label}</span>
+        </button>
+      `;
+    }).join('');
+  }
+}
+
+/**
+ * Update Google Maps mobile place sheet with current scene details
+ */
+function updateMobilePlaceSheet(viewpoint) {
+  if (!viewpoint) return;
+  const title = document.getElementById('place-sheet-title');
+  if (title) title.textContent = viewpoint.name;
+
+  const badge = document.getElementById('place-sheet-badge');
+  if (badge) {
+    badge.textContent = viewpoint.floorLabel || (currentSection === 'campus' ? 'Campus' : 'Hostel');
+  }
+
+  const sub = document.getElementById('place-sheet-sub');
+  if (sub) {
+    sub.textContent = viewpoint.subtitle || (viewpoint.category ? `${viewpoint.category} • GNDEC Bidar` : 'Guru Nanak Dev Engineering College');
+  }
+}
+
+/**
+ * Reorient camera view smoothly to True North (0° N, 0° lat) like Google Maps
+ */
+function reorientToNorth() {
+  const norm = ((lon % 360) + 360) % 360;
+  const destLon = norm > 180 ? 360 : 0;
+  targetLon = lon + (destLon - norm);
+  targetLat = 0;
+  showToast('🧭 Reoriented to True North (0° N)');
+}
+
+/**
  * High-Performance Asynchronous Texture Loader with Memory Caching
  * Optimized for maximum photo sphere quality: mipmaps enabled, linear mipmap filtering, anisotropy = 16
  */
@@ -1300,6 +1430,19 @@ export function loadScene(sceneId, arrivalHeading = null) {
   // Update Header details
   const sceneTitleHeader = document.getElementById('scene-title-header');
   if (sceneTitleHeader) sceneTitleHeader.textContent = targetViewpoint.name;
+
+  // Update Google Maps mobile capsule details
+  const mobileSceneTitle = document.getElementById('mobile-scene-title');
+  if (mobileSceneTitle) mobileSceneTitle.textContent = targetViewpoint.name;
+  const mobileSceneSub = document.getElementById('mobile-scene-sub');
+  if (mobileSceneSub) {
+    const floorInfo = targetViewpoint.floorLabel || (currentSection === 'campus' ? 'Campus 360°' : 'Hostel 360°');
+    mobileSceneSub.textContent = `${floorInfo} • Tap to search`;
+  }
+
+  // Update Google Maps mobile floor selector and bottom sheet
+  updateMobilePlaceSheet(targetViewpoint);
+  renderMobileFloorPicker();
 
   // Update breadcrumb
   const breadcrumbContainer = document.getElementById('breadcrumb-trail');
@@ -1723,13 +1866,18 @@ function updateCompassUI(angle) {
   const normAngle = ((angle % 360) + 360) % 360;
   const compassDial = document.getElementById('compass-dial');
   const compassHeading = document.getElementById('compass-heading');
+  const miniCompassDial = document.getElementById('mini-compass-dial');
+  const sheetHeadingLabel = document.getElementById('sheet-heading-label');
 
   if (compassDial) compassDial.style.transform = `rotate(${-normAngle}deg)`;
-  if (compassHeading) {
-    const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
-    const dirIdx = Math.round(normAngle / 45) % 8;
-    compassHeading.textContent = `${Math.round(normAngle)}° ${directions[dirIdx]}`;
-  }
+  if (miniCompassDial) miniCompassDial.style.transform = `rotate(${-normAngle}deg)`;
+
+  const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+  const dirIdx = Math.round(normAngle / 45) % 8;
+  const headingText = `${Math.round(normAngle)}° ${directions[dirIdx]}`;
+
+  if (compassHeading) compassHeading.textContent = headingText;
+  if (sheetHeadingLabel) sheetHeadingLabel.textContent = headingText;
 
   const minimapCone = document.getElementById('minimap-cone');
   if (minimapCone) minimapCone.style.transform = `translate(-50%, -100%) rotate(${normAngle}deg)`;
@@ -1979,23 +2127,75 @@ function setupEventListeners() {
   });
 
   // Search Modal Trigger & Input
-  document.getElementById('btn-search-trigger')?.addEventListener('click', () => {
+  const openSearchModal = () => {
     showModal('modal-search');
     const input = document.getElementById('global-search-input');
     if (input) {
       input.focus();
       handleSearchInput(input.value);
     }
-  });
+  };
+
+  document.getElementById('btn-search-trigger')?.addEventListener('click', openSearchModal);
+  document.getElementById('header-search-capsule')?.addEventListener('click', openSearchModal);
+  document.getElementById('sheet-btn-search')?.addEventListener('click', openSearchModal);
 
   document.getElementById('global-search-input')?.addEventListener('input', (e) => {
     handleSearchInput(e.target.value);
   });
 
-  // Google Maps Style Recenter on Compass tap
-  document.querySelector('.compass-widget')?.addEventListener('click', () => {
-    targetLat = 0;
-    showToast('Horizon Level Re-centered');
+  // Mobile Bottom Place Sheet actions
+  document.getElementById('sheet-btn-explore')?.addEventListener('click', () => {
+    const willOpen = !mobileDrawer?.classList.contains('mobile-open');
+    mobileDrawer?.classList.toggle('mobile-open', willOpen);
+    mobileBackdrop?.classList.toggle('active', willOpen);
+  });
+
+  document.getElementById('place-sheet-info')?.addEventListener('click', () => {
+    const willOpen = !mobileDrawer?.classList.contains('mobile-open');
+    mobileDrawer?.classList.toggle('mobile-open', willOpen);
+    mobileBackdrop?.classList.toggle('active', willOpen);
+  });
+
+  // Google Maps Style Recenter & True North animation
+  document.querySelector('.compass-widget')?.addEventListener('click', reorientToNorth);
+  document.getElementById('sheet-btn-north')?.addEventListener('click', reorientToNorth);
+
+  // Mobile micro mode switcher
+  document.querySelectorAll('.exp-micro-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const mode = e.currentTarget.dataset.mode;
+      if (mode && mode !== currentSection) {
+        setExperienceSection(mode);
+      }
+    });
+  });
+
+  // Mobile floor picker tap delegation
+  document.getElementById('mobile-floor-picker')?.addEventListener('click', (e) => {
+    const btn = e.target.closest('.floor-level-btn');
+    if (btn && btn.dataset.scene) {
+      loadScene(btn.dataset.scene);
+    }
+  });
+
+  // Double tap to zoom on touch screens (like Google Street View)
+  let lastCanvasTapTime = 0;
+  const webglCanvasEl = document.getElementById('webgl-canvas');
+  webglCanvasEl?.addEventListener('pointerup', (e) => {
+    if (e.pointerType === 'touch') {
+      const now = performance.now();
+      if (now - lastCanvasTapTime < 320) {
+        if (Math.abs(targetFov - 75) < 8) {
+          targetFov = 45;
+          showToast('🔍 Zoomed In');
+        } else {
+          targetFov = 75;
+          showToast('🔍 Zoom Reset');
+        }
+      }
+      lastCanvasTapTime = now;
+    }
   });
 
   // Top header action buttons
