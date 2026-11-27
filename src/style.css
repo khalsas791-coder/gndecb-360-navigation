@@ -2261,59 +2261,37 @@ body, html {
     z-index: 1 !important;
   }
 
-  /* 7. GOOGLE STREET VIEW ARROWS & CLEAN READABLE HOTSPOT PILLS */
-  .hotspot-label {
-    display: flex !important;
-    flex-direction: column !important;
-    position: absolute !important;
-    top: 38px !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-    padding: 4px 10px !important;
-    backdrop-filter: blur(14px) !important;
-    -webkit-backdrop-filter: blur(14px) !important;
-    background: rgba(10, 15, 29, 0.88) !important;
-    border: 1px solid rgba(255, 255, 255, 0.22) !important;
-    border-radius: 12px !important;
-    white-space: normal !important;
-    width: max-content !important;
-    max-width: 195px !important;
-    text-align: center !important;
-    align-items: center !important;
-    overflow: hidden !important;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.55) !important;
-    pointer-events: none !important;
-  }
-
-  .hotspot-label .hotspot-title,
-  .hotspot-label div > div {
-    font-size: 0.72rem !important;
-    font-weight: 600 !important;
-    line-height: 1.25 !important;
-    color: #ffffff !important;
-    white-space: normal !important;
-    display: -webkit-box !important;
-    -webkit-line-clamp: 2 !important;
-    -webkit-box-orient: vertical !important;
-    overflow: hidden !important;
-    max-width: 100% !important;
-    text-align: center !important;
-  }
-
-  /* Hide truncated uppercase subtitles on mobile for unobstructed Street View clarity */
-  .hotspot-label span,
-  .hotspot-label .hotspot-sub {
+  /* 7. GOOGLE MAPS STREET VIEW ARROWS ONLY ON MOBILE (NO FLOATING NAMES OR INFO CIRCLES) */
+  .hotspot-label,
+  .hotspot-pulse,
+  .hotspot-item:has(.hotspot-pulse) {
     display: none !important;
   }
 
   .streetview-arrow {
-    width: 34px;
-    height: 34px;
+    width: 44px;
+    height: 44px;
+    background: rgba(12, 19, 34, 0.62);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.88);
+    color: #ffffff;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5), 0 0 14px rgba(0, 240, 255, 0.35);
+    animation: street-gentle-pulse 2.6s infinite ease-in-out;
   }
 
   .streetview-arrow svg {
-    width: 17px;
-    height: 17px;
+    width: 22px;
+    height: 22px;
+    stroke-width: 2.8;
+    filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.65));
+  }
+
+  .streetview-arrow:active {
+    transform: scale(0.92);
+    background: rgba(0, 240, 255, 0.85);
+    color: #050b14;
+    border-color: #ffffff;
   }
 
   .hotspot-card {
