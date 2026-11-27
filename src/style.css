@@ -73,6 +73,8 @@ body, html {
   cursor: grab;
   transition: filter 0.3s ease;
   touch-action: none; /* Required for native-feel drag panning and multi-touch pinch zoom */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
 }
 
 #webgl-canvas:active {
@@ -84,8 +86,8 @@ body, html {
 }
 
 /* ==========================================================================
-   TOP & BOTTOM GRADIENT VIGNETTE
-   Ensures UI text, controls & hotspots are 100% readable over bright skies
+   TOP & BOTTOM SUBTLE GRADIENT VIGNETTE
+   Ensures UI text & controls are readable while preserving 100% photo clarity
    ========================================================================== */
 .tour-vignette {
   position: absolute;
@@ -93,8 +95,7 @@ body, html {
   pointer-events: none;
   z-index: 3;
   background:
-    linear-gradient(180deg, rgba(0, 0, 0, 0.72) 0%, rgba(0, 0, 0, 0.28) 16%, transparent 34%, transparent 68%, rgba(0, 0, 0, 0.32) 84%, rgba(0, 0, 0, 0.78) 100%),
-    radial-gradient(circle at center, transparent 52%, rgba(0, 0, 0, 0.42) 100%);
+    linear-gradient(180deg, rgba(0, 0, 0, 0.38) 0%, rgba(0, 0, 0, 0.08) 12%, transparent 22%, transparent 82%, rgba(0, 0, 0, 0.12) 92%, rgba(0, 0, 0, 0.42) 100%);
 }
 
 /* ==========================================================================
@@ -1496,7 +1497,8 @@ body, html {
 .header-search-capsule,
 .experience-switcher-micro,
 .mobile-floor-picker,
-.mobile-place-sheet {
+.mobile-place-sheet,
+.mobile-zoom-controls {
   display: none !important;
 }
 
@@ -1761,6 +1763,51 @@ body, html {
 
   .floor-level-btn:active {
     transform: scale(0.92);
+  }
+
+  /* 3b. GOOGLE MAPS MOBILE FLOATING ZOOM IN / ZOOM OUT PILL */
+  .mobile-zoom-controls {
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    position: fixed;
+    right: 12px;
+    bottom: calc(126px + env(safe-area-inset-bottom, 0px));
+    z-index: 35;
+    background: rgba(13, 21, 38, 0.90);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 9999px;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.55);
+    overflow: hidden;
+    pointer-events: auto;
+  }
+
+  .mobile-zoom-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: transparent;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    padding: 0;
+  }
+
+  .mobile-zoom-btn:active {
+    background: rgba(0, 240, 255, 0.25);
+    color: var(--primary-cyan);
+    transform: scale(0.92);
+  }
+
+  .mobile-zoom-divider {
+    width: 20px;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.14);
   }
 
   /* 4. GOOGLE MAPS BOTTOM PLACE SHEET */

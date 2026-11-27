@@ -659,6 +659,17 @@ function initApp() {
       <!-- Google Maps Vertical Level / Floor Selector (Mobile only) -->
       <div class="mobile-floor-picker" id="mobile-floor-picker" aria-label="Floor Level Selector"></div>
 
+      <!-- Google Maps Mobile Zoom Controls (Mobile only) -->
+      <div class="mobile-zoom-controls" id="mobile-zoom-controls" aria-label="Zoom In and Out">
+        <button type="button" class="mobile-zoom-btn" id="mobile-btn-zoom-in" title="Zoom In (+)">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+        <div class="mobile-zoom-divider"></div>
+        <button type="button" class="mobile-zoom-btn" id="mobile-btn-zoom-out" title="Zoom Out (−)">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+      </div>
+
       <!-- Google Maps Bottom Place Sheet (Mobile only) -->
       <div class="mobile-place-sheet" id="mobile-place-sheet">
         <div class="place-sheet-handle"></div>
@@ -1004,14 +1015,14 @@ function initThreeViewer() {
   camera = new THREE.PerspectiveCamera(fov, window.innerWidth / window.innerHeight, 1, 1100);
   camera.target = new THREE.Vector3(0, 0, 0);
 
-  // High-fidelity sphere geometry: 128 x 96 segments eliminates geometric polygon distortion
-  const geometry = new THREE.SphereGeometry(500, 128, 96);
+  // High-fidelity sphere geometry: 144 x 108 segments eliminates geometric polygon distortion
+  const geometry = new THREE.SphereGeometry(500, 144, 108);
   geometry.scale(-1, 1, 1); // Invert sphere so texture displays on inner surface
 
   textureLoader = new THREE.TextureLoader();
 
-  // Create base material with default white color so textures render at full natural brightness
-  const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  // Create base material with default white color and no tone-mapping compression
+  const material = new THREE.MeshBasicMaterial({ color: 0xffffff, toneMapped: false });
   sphereMesh = new THREE.Mesh(geometry, material);
   scene.add(sphereMesh);
 
@@ -1022,9 +1033,10 @@ function initThreeViewer() {
     powerPreference: 'high-performance',
     preserveDrawingBuffer: true
   });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.5));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 3.0));
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.NoToneMapping;
 
   canvas.addEventListener('pointerdown', onPointerDown);
   window.addEventListener('resize', onWindowResize);
@@ -1306,15 +1318,14 @@ function getOrLoadTexture(url) {
       url,
       (texture) => {
         texture.colorSpace = THREE.SRGBColorSpace;
-        // PHOTO SPHERE VIEWER OPTIMIZATIONS:
-        // 1. Enable mipmaps to eliminate shimmering and pixelation when zoomed out
-        texture.generateMipmaps = true;
-        // 2. Linear mipmap linear minFilter for sharpest, smoothest texture filtering
-        texture.minFilter = THREE.LinearMipmapLinearFilter;
+        // ULTRA-HD MAXIMUM CLARITY (Google Street View standard):
+        // Disable mipmap downsampling so textures are NEVER blurred by lower mip levels
+        texture.generateMipmaps = false;
+        texture.minFilter = THREE.LinearFilter;
         texture.magFilter = THREE.LinearFilter;
-        // 3. Set anisotropy to 16 to keep edges razor-sharp at oblique angles
+        // Maximum hardware anisotropic filtering to keep edges razor-sharp
         const maxAniso = renderer ? renderer.capabilities.getMaxAnisotropy() : 16;
-        texture.anisotropy = Math.min(16, maxAniso || 16);
+        texture.anisotropy = maxAniso || 16;
         texture.wrapS = THREE.ClampToEdgeWrapping;
         texture.wrapT = THREE.ClampToEdgeWrapping;
         texture.needsUpdate = true;
@@ -1816,7 +1827,7 @@ function onWindowResize() {
   }
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.5));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 3.0));
   renderHotspots();
 }
 
@@ -2222,6 +2233,17 @@ function setupEventListeners() {
 
   document.getElementById('btn-zoom-out')?.addEventListener('click', () => {
     targetFov = Math.min(108, targetFov + 10);
+  });
+
+  // Mobile Zoom In & Out Floating Buttons
+  document.getElementById('mobile-btn-zoom-in')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    targetFov = Math.max(35, targetFov - 12);
+  });
+
+  document.getElementById('mobile-btn-zoom-out')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    targetFov = Math.min(108, targetFov + 12);
   });
 
   document.getElementById('btn-snapshot')?.addEventListener('click', captureSnapshot);
