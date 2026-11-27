@@ -79,8 +79,9 @@ export const HOSTEL_IMAGES = Object.freeze({
   wayToGym: '/way_to_gym.jpeg',
   mainGym: '/main_gym.jpeg',
   floor1: '/floor1.png',
-  floor2: '/floor2.png',
-  f2Entrance: '/f2_entrance.jpeg',
+  floor2: '/floor 2 corridor.jpeg',
+  floor2Corridor: '/floor 2 corridor.jpeg',
+  f2Entrance: '/floor 2 corridor.jpeg',
   f2Corridor1: '/f2_corridor1.jpeg',
   f2Corridor2: '/f2_corridor2.jpeg',
   f2Corridor3: '/f2_corridor3.jpeg',
@@ -1480,7 +1481,7 @@ export const HOSTEL_VIEWPOINTS = {
         targetHeading: 0
       },
       {
-        lon: 180,
+        lon: 152,
         lat: -12,
         type: 'arrow',
         arrowDir: 'forward',
@@ -3595,26 +3596,18 @@ export const HOSTEL_VIEWPOINTS = {
     name: 'Floor 2 Main Entrance & Landing',
     subtitle: '2nd Floor Staircase Landing & Corridor Entrance',
     category: 'Residential Floors',
-    image: HOSTEL_IMAGES.f2Entrance,
+    image: HOSTEL_IMAGES.floor2Corridor,
     hasImage: true,
     floorLabel: 'F2 Entrance',
     breadcrumb: ['Hostel', 'Floor 2', 'Entrance Landing'],
     minimapPos: { top: '35%', left: '42%' },
     connections: {
-      forward: 'f2_corridor1',
+      forward: 'floor3',
       back: 'lobby',
-      right: 'floor3'
+      up: 'floor3',
+      down: 'lobby'
     },
     hotspots: [
-      {
-        lon: 180,
-        lat: -14,
-        type: 'arrow',
-        arrowDir: 'forward',
-        title: 'Walk to Floor 2 - Corridor 1',
-        subtitle: 'Enter 2nd floor residential hallway',
-        targetScene: 'f2_corridor1'
-      },
       {
         lon: 60,
         lat: -14,
@@ -3630,9 +3623,10 @@ export const HOSTEL_VIEWPOINTS = {
         lat: 2,
         type: 'arrow',
         arrowDir: 'forward',
-        title: 'Ascend to Floor 3',
+        title: '🏢 Ascend Stairs to Floor 3',
         subtitle: 'Continue up stairs towards Floor 3',
-        targetScene: 'floor3'
+        targetScene: 'floor3',
+        targetHeading: 180
       },
       {
         lon: 300,
@@ -3650,26 +3644,18 @@ export const HOSTEL_VIEWPOINTS = {
     name: 'Floor 2 Main Entrance & Landing',
     subtitle: '2nd Floor Staircase Landing & Corridor Entrance',
     category: 'Residential Floors',
-    image: HOSTEL_IMAGES.f2Entrance,
+    image: HOSTEL_IMAGES.floor2Corridor,
     hasImage: true,
     floorLabel: 'F2 Entrance',
     breadcrumb: ['Hostel', 'Floor 2', 'Entrance Landing'],
     minimapPos: { top: '35%', left: '42%' },
     connections: {
-      forward: 'f2_corridor1',
+      forward: 'floor3',
       back: 'lobby',
-      right: 'floor3'
+      up: 'floor3',
+      down: 'lobby'
     },
     hotspots: [
-      {
-        lon: 180,
-        lat: -14,
-        type: 'arrow',
-        arrowDir: 'forward',
-        title: 'Walk to Floor 2 - Corridor 1',
-        subtitle: 'Enter 2nd floor residential hallway',
-        targetScene: 'f2_corridor1'
-      },
       {
         lon: 60,
         lat: -14,
@@ -3685,9 +3671,10 @@ export const HOSTEL_VIEWPOINTS = {
         lat: 2,
         type: 'arrow',
         arrowDir: 'forward',
-        title: 'Ascend to Floor 3',
+        title: '🏢 Ascend Stairs to Floor 3',
         subtitle: 'Continue up stairs towards Floor 3',
-        targetScene: 'floor3'
+        targetScene: 'floor3',
+        targetHeading: 180
       },
       {
         lon: 300,
@@ -3864,15 +3851,6 @@ export const HOSTEL_VIEWPOINTS = {
         subtitle: 'Return down stairs to Floor 2 Main Entrance & Landing',
         targetScene: 'floor2',
         targetHeading: 180
-      },
-      {
-        lon: 180,
-        lat: -12,
-        type: 'arrow',
-        arrowDir: 'forward',
-        title: 'Walk Down Floor 3 Corridor',
-        subtitle: 'Student rooms 301 - 320 wing',
-        targetScene: 'floor4'
       },
       {
         lon: 260,

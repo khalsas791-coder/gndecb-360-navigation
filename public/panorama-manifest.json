@@ -723,11 +723,11 @@
     },
     "floor2": {
       "id": "floor2",
-      "filename": "floor2.png",
-      "localPath": "/floor2.png",
-      "nativeWidth": 1024,
-      "nativeHeight": 1024,
-      "aspectRatio": 1.0,
+      "filename": "floor 2 corridor.jpeg",
+      "localPath": "/floor 2 corridor.jpeg",
+      "nativeWidth": 7680,
+      "nativeHeight": 3840,
+      "aspectRatio": 2.0,
       "category": "custom",
       "availableTiers": [
         "2k"
