@@ -73,8 +73,6 @@ body, html {
   cursor: grab;
   transition: filter 0.3s ease;
   touch-action: none; /* Required for native-feel drag panning and multi-touch pinch zoom */
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
 }
 
 #webgl-canvas:active {
@@ -86,8 +84,8 @@ body, html {
 }
 
 /* ==========================================================================
-   TOP & BOTTOM SUBTLE GRADIENT VIGNETTE
-   Ensures UI text & controls are readable while preserving 100% photo clarity
+   TOP & BOTTOM ULTRA-LIGHT GRADIENT EDGE VIGNETTE
+   Leaves 100% of panorama bright, vibrant, crisp & cloud-free
    ========================================================================== */
 .tour-vignette {
   position: absolute;
@@ -95,7 +93,7 @@ body, html {
   pointer-events: none;
   z-index: 3;
   background:
-    linear-gradient(180deg, rgba(0, 0, 0, 0.38) 0%, rgba(0, 0, 0, 0.08) 12%, transparent 22%, transparent 82%, rgba(0, 0, 0, 0.12) 92%, rgba(0, 0, 0, 0.42) 100%);
+    linear-gradient(180deg, rgba(0, 0, 0, 0.24) 0%, transparent 14%, transparent 86%, rgba(0, 0, 0, 0.28) 100%);
 }
 
 /* ==========================================================================
@@ -676,8 +674,8 @@ body, html {
 .elevator-panel {
   position: absolute;
   right: 1.5rem;
-  top: 45%;
-  transform: translateY(-50%);
+  top: 108px;
+  bottom: 205px;
   background: var(--bg-glass);
   backdrop-filter: blur(20px);
   border: 1px solid var(--border-glass);
@@ -688,7 +686,6 @@ body, html {
   gap: 0.35rem;
   z-index: 15;
   box-shadow: var(--shadow-card);
-  max-height: calc(100vh - 280px);
   overflow-y: auto;
 }
 
@@ -1493,12 +1490,44 @@ body, html {
   pointer-events: auto;
 }
 
+/* Transient Zoom Feedback Pill (Desktop & Mobile) */
+.zoom-hud-pill {
+  position: fixed;
+  top: 5.5rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(-6px);
+  z-index: 42;
+  padding: 0.35rem 0.9rem;
+  border-radius: 9999px;
+  background: rgba(10, 15, 29, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 240, 255, 0.4);
+  color: #ffffff;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.55);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.zoom-hud-pill.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
 /* Google Maps Mobile View Components - Hidden on Desktop */
+.mobile-capsule-back,
 .header-search-capsule,
+.mobile-chips-bar,
+.mobile-right-rail,
 .experience-switcher-micro,
 .mobile-floor-picker,
 .mobile-place-sheet,
-.mobile-zoom-controls {
+.mobile-zoom-controls,
+.mobile-drawer-topbar {
   display: none !important;
 }
 
@@ -1535,27 +1564,27 @@ body, html {
     pointer-events: none;
   }
 
-  /* 2. FLOATING GOOGLE MAPS TOP SEARCH CAPSULE */
+  /* 2. FLOATING GOOGLE MAPS TOP SEARCH BAR */
   .header-nav {
     pointer-events: auto;
     position: fixed;
     top: calc(10px + env(safe-area-inset-top, 0px));
     left: 12px;
     right: 12px;
-    height: 52px;
+    height: 48px;
     z-index: 40;
-    background: rgba(13, 21, 38, 0.90);
+    background: rgba(13, 21, 38, 0.92);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
     border: 1px solid rgba(255, 255, 255, 0.16);
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
-    padding: 0 8px;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55);
+    padding: 0 6px;
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
     border-radius: 9999px;
-    gap: 0.5rem;
+    gap: 6px;
   }
 
   /* Hide desktop-only items inside header */
@@ -1563,6 +1592,7 @@ body, html {
   .experience-switcher,
   .scene-switcher,
   .breadcrumb-trail,
+  #btn-return-portal,
   #btn-search-trigger,
   #btn-audio,
   #btn-help,
@@ -1572,7 +1602,30 @@ body, html {
     display: none !important;
   }
 
-  /* Search capsule in top bar */
+  /* Back arrow integrated inside left of Google Maps search pill */
+  .mobile-capsule-back {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.08);
+    color: #e2e8f0;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: transform 0.16s ease, background 0.16s ease;
+  }
+
+  .mobile-capsule-back:active {
+    transform: scale(0.92);
+    background: rgba(0, 240, 255, 0.22);
+    color: #ffffff;
+  }
+
+  /* Center Search Bar */
   .header-search-capsule {
     display: flex !important;
     align-items: center;
@@ -1586,10 +1639,10 @@ body, html {
   }
 
   .capsule-icon {
-    width: 30px;
-    height: 30px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
-    background: rgba(0, 240, 255, 0.15);
+    background: rgba(0, 240, 255, 0.14);
     color: var(--primary-cyan);
     display: flex;
     align-items: center;
@@ -1605,7 +1658,7 @@ body, html {
   }
 
   .capsule-title {
-    font-size: 0.84rem;
+    font-size: 0.86rem;
     font-weight: 700;
     color: #ffffff;
     white-space: nowrap;
@@ -1615,7 +1668,7 @@ body, html {
   }
 
   .capsule-sub {
-    font-size: 0.64rem;
+    font-size: 0.65rem;
     color: #94a3b8;
     white-space: nowrap;
     overflow: hidden;
@@ -1623,71 +1676,12 @@ body, html {
     line-height: 1.2;
   }
 
-  /* Header right actions */
+  /* Right button inside search pill */
   .header-actions {
     display: flex;
     align-items: center;
-    gap: 0.35rem;
+    gap: 4px;
     flex-shrink: 0;
-  }
-
-  #btn-return-portal {
-    width: 36px;
-    height: 36px;
-    min-width: 36px;
-    min-height: 36px;
-    border-radius: 50%;
-    padding: 0;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    color: #cbd5e1;
-  }
-
-  #btn-return-portal:active {
-    transform: scale(0.92);
-    background: rgba(0, 240, 255, 0.2);
-  }
-
-  .portal-btn-label {
-    display: none !important;
-  }
-
-  .experience-switcher-micro {
-    display: flex !important;
-    align-items: center;
-    background: rgba(0, 0, 0, 0.45);
-    border-radius: 9999px;
-    padding: 2px;
-    gap: 2px;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-  }
-
-  .exp-micro-btn {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    border: 1px solid transparent;
-    background: transparent;
-    font-size: 13px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-    padding: 0;
-  }
-
-  .exp-micro-btn.active {
-    background: rgba(0, 240, 255, 0.22);
-    border-color: rgba(0, 240, 255, 0.5);
-    box-shadow: 0 0 10px rgba(0, 240, 255, 0.45);
-  }
-
-  .exp-micro-btn:active {
-    transform: scale(0.92);
   }
 
   #btn-mobile-drawer {
@@ -1709,24 +1703,156 @@ body, html {
     transform: scale(0.92);
   }
 
-  /* 3. GOOGLE MAPS VERTICAL FLOOR / LEVEL SELECTOR */
+  /* 2b. GOOGLE MAPS HORIZONTAL FILTER CHIPS BAR UNDER SEARCH PILL */
+  .mobile-chips-bar {
+    display: flex !important;
+    align-items: center;
+    gap: 7px;
+    position: fixed;
+    top: calc(64px + env(safe-area-inset-top, 0px));
+    left: 0;
+    right: 0;
+    padding: 0 12px;
+    z-index: 38;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    pointer-events: auto;
+  }
+
+  .mobile-chips-bar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .gmap-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    height: 30px;
+    padding: 0 11px;
+    border-radius: 9999px;
+    background: rgba(13, 21, 38, 0.86);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    color: #e2e8f0;
+    font-family: var(--font-main);
+    font-size: 0.72rem;
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .gmap-chip:active {
+    transform: scale(0.94);
+  }
+
+  .gmap-chip.active {
+    background: rgba(6, 182, 212, 0.38);
+    border-color: rgba(0, 240, 255, 0.75);
+    color: #ffffff;
+    box-shadow: 0 0 12px rgba(0, 240, 255, 0.35);
+  }
+
+  .gmap-chip.exp-micro-btn.active[data-mode="campus"] {
+    background: var(--campus-gradient);
+    border-color: rgba(192, 132, 252, 0.6);
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(168, 85, 247, 0.4);
+  }
+
+  .gmap-chip.exp-micro-btn.active[data-mode="hostel"] {
+    background: var(--primary-gradient);
+    border-color: rgba(0, 240, 255, 0.6);
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(0, 240, 255, 0.4);
+  }
+
+  .zoom-hud-pill {
+    top: calc(102px + env(safe-area-inset-top, 0px));
+  }
+
+  /* 3. UNIFIED RIGHT FLOATING RAIL (COMPASS + FLOOR PICKER + ZOOM PILL) */
+  .mobile-right-rail {
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    position: fixed;
+    right: 10px;
+    top: calc(106px + env(safe-area-inset-top, 0px));
+    bottom: calc(120px + env(safe-area-inset-bottom, 0px));
+    z-index: 35;
+    pointer-events: none;
+  }
+
+  .mobile-compass-fab {
+    pointer-events: auto;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: rgba(13, 21, 38, 0.90);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: transform 0.18s ease, border-color 0.18s ease;
+  }
+
+  .mobile-compass-fab:active {
+    transform: scale(0.92);
+    border-color: var(--primary-cyan);
+  }
+
+  .mini-compass-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 240, 255, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.1s linear;
+  }
+
+  .mini-compass-needle {
+    width: 3px;
+    height: 16px;
+    border-radius: 2px;
+    background: linear-gradient(to bottom, #f43f5e 50%, #cbd5e1 50%);
+  }
+
+  /* Vertical Level / Floor Selector inside Rail */
   .mobile-floor-picker {
     display: flex !important;
     flex-direction: column;
-    position: fixed;
-    right: 10px;
-    top: 48%;
-    transform: translateY(-50%);
-    z-index: 35;
-    gap: 4px;
-    background: rgba(13, 21, 38, 0.88);
+    position: static;
+    transform: none;
+    gap: 3px;
+    background: rgba(13, 21, 38, 0.90);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    padding: 5px 3px;
-    border: 1px solid rgba(255, 255, 255, 0.16);
+    padding: 4px 3px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
     border-radius: 9999px;
     box-shadow: 0 6px 24px rgba(0, 0, 0, 0.55);
     pointer-events: auto;
+    overflow-y: auto;
+    scrollbar-width: none;
+    max-height: 100%;
+  }
+
+  .mobile-floor-picker::-webkit-scrollbar {
+    display: none;
   }
 
   .floor-level-btn {
@@ -1748,44 +1874,37 @@ body, html {
     padding: 0;
   }
 
-  .floor-level-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: #ffffff;
-  }
-
   .floor-level-btn.active {
     background: linear-gradient(135deg, #00f0ff 0%, #0077ff 100%);
     color: #050b14;
     font-weight: 800;
     box-shadow: 0 0 14px rgba(0, 240, 255, 0.65);
-    border-color: rgba(255, 255, 255, 0.4);
+    border-color: rgba(255, 255, 255, 0.45);
   }
 
   .floor-level-btn:active {
     transform: scale(0.92);
   }
 
-  /* 3b. GOOGLE MAPS MOBILE FLOATING ZOOM IN / ZOOM OUT PILL */
+  /* Zoom In / Zoom Out / Reset Pill inside Rail */
   .mobile-zoom-controls {
     display: flex !important;
     flex-direction: column;
     align-items: center;
-    position: fixed;
-    right: 12px;
-    bottom: calc(126px + env(safe-area-inset-bottom, 0px));
-    z-index: 35;
+    position: static;
     background: rgba(13, 21, 38, 0.90);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.16);
+    border: 1px solid rgba(255, 255, 255, 0.18);
     border-radius: 9999px;
     box-shadow: 0 6px 24px rgba(0, 0, 0, 0.55);
     overflow: hidden;
     pointer-events: auto;
+    flex-shrink: 0;
   }
 
   .mobile-zoom-btn {
-    width: 36px;
+    width: 38px;
     height: 36px;
     border: none;
     background: transparent;
@@ -1794,8 +1913,13 @@ body, html {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.18s ease;
+    transition: all 0.16s ease;
     padding: 0;
+  }
+
+  .mobile-zoom-btn.reset-fit {
+    height: 32px;
+    color: var(--primary-cyan);
   }
 
   .mobile-zoom-btn:active {
@@ -1805,7 +1929,7 @@ body, html {
   }
 
   .mobile-zoom-divider {
-    width: 20px;
+    width: 22px;
     height: 1px;
     background: rgba(255, 255, 255, 0.14);
   }
@@ -1815,28 +1939,28 @@ body, html {
     display: flex !important;
     flex-direction: column;
     position: fixed;
-    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(10px + env(safe-area-inset-bottom, 0px));
     left: 12px;
     right: 12px;
-    z-index: 30;
-    background: rgba(13, 21, 38, 0.92);
+    z-index: 32;
+    background: rgba(13, 21, 38, 0.93);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
     border-radius: 20px;
     border: 1px solid rgba(255, 255, 255, 0.16);
     box-shadow: 0 12px 36px rgba(0, 0, 0, 0.65);
-    padding: 0.5rem 0.85rem 0.65rem;
+    padding: 0.45rem 0.85rem 0.65rem;
     pointer-events: auto;
-    gap: 0.4rem;
+    gap: 0.35rem;
     transition: transform 0.28s ease, opacity 0.28s ease;
   }
 
   .place-sheet-handle {
-    width: 38px;
+    width: 36px;
     height: 4px;
     background: rgba(255, 255, 255, 0.28);
     border-radius: 9999px;
-    margin: 0 auto 0.2rem auto;
+    margin: 0 auto 0.15rem auto;
     flex-shrink: 0;
   }
 
@@ -1855,7 +1979,7 @@ body, html {
   }
 
   .place-sheet-title {
-    font-size: 0.95rem;
+    font-size: 0.94rem;
     font-weight: 700;
     color: #ffffff;
     margin: 0;
@@ -1891,10 +2015,15 @@ body, html {
     display: flex;
     align-items: center;
     gap: 0.45rem;
-    margin-top: 0.25rem;
+    margin-top: 0.2rem;
     overflow-x: auto;
+    scrollbar-width: none;
     padding-bottom: 2px;
     -webkit-overflow-scrolling: touch;
+  }
+
+  .place-sheet-actions::-webkit-scrollbar {
+    display: none;
   }
 
   .sheet-action-pill {
@@ -1902,7 +2031,7 @@ body, html {
     align-items: center;
     justify-content: center;
     gap: 5px;
-    font-size: 0.73rem;
+    font-size: 0.72rem;
     font-weight: 600;
     padding: 0 11px;
     height: 29px;
@@ -1936,36 +2065,46 @@ body, html {
     padding: 0 9px;
   }
 
-  .sheet-mini-compass {
-    width: 14px;
-    height: 14px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.12s linear;
+  /* 5. INTERACTIVE 2D MINIMAP PiP ON MOBILE */
+  .bottom-dock {
+    display: block !important;
+    position: fixed !important;
+    inset: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    pointer-events: none !important;
+    z-index: 33 !important;
   }
 
-  /* 5. HIDE DESKTOP BOTTOM DOCK ON MOBILE */
-  .bottom-dock {
+  .bottom-dock .compass-widget,
+  .bottom-dock #dpad-navigation,
+  .bottom-dock .dock-controls {
     display: none !important;
   }
 
-  /* 2D Minimap - Compact floating card tucked above place sheet on mobile */
+  /* Hidden by default to keep 360 view unobstructed; slides into view when 'Map' chip tapped */
   .minimap-card {
+    display: none !important;
+  }
+
+  .minimap-card.mobile-visible {
     display: block !important;
     position: fixed !important;
-    bottom: calc(105px + env(safe-area-inset-bottom, 0px)) !important;
-    right: 12px !important;
-    width: 105px !important;
-    height: 105px !important;
+    bottom: calc(120px + env(safe-area-inset-bottom, 0px)) !important;
+    left: 12px !important;
+    right: auto !important;
+    width: 132px !important;
+    height: 132px !important;
     padding: 0.35rem !important;
-    border-radius: 12px !important;
-    backdrop-filter: blur(14px) !important;
-    -webkit-backdrop-filter: blur(14px) !important;
-    background: rgba(10, 15, 29, 0.85) !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6) !important;
-    z-index: 25 !important;
+    border-radius: 14px !important;
+    backdrop-filter: blur(18px) !important;
+    -webkit-backdrop-filter: blur(18px) !important;
+    background: rgba(10, 15, 29, 0.90) !important;
+    border: 1px solid rgba(0, 240, 255, 0.35) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7) !important;
+    z-index: 34 !important;
+    pointer-events: auto !important;
   }
 
   .minimap-header {
@@ -1974,10 +2113,10 @@ body, html {
 
   .minimap-body {
     height: 100% !important;
-    border-radius: 8px !important;
+    border-radius: 9px !important;
   }
 
-  /* 6. FULL DIRECTORY DRAWER (ELEVATOR PANEL) */
+  /* 6. READABLE 2-COLUMN GOOGLE MAPS LOCATIONS DIRECTORY SHEET */
   .elevator-panel {
     position: fixed;
     top: auto;
@@ -1985,20 +2124,20 @@ body, html {
     left: 0;
     right: 0;
     width: 100%;
-    max-height: 72vh;
+    max-height: 76vh;
     border-radius: 24px 24px 0 0;
-    background: rgba(10, 15, 29, 0.96);
+    background: rgba(10, 15, 29, 0.97);
     backdrop-filter: blur(28px);
     -webkit-backdrop-filter: blur(28px);
     border: 1px solid rgba(255, 255, 255, 0.14);
     border-bottom: none;
     box-shadow: 0 -12px 48px rgba(0, 0, 0, 0.85);
-    padding: 0.75rem 1rem calc(1.5rem + env(safe-area-inset-bottom, 0px));
+    padding: 0.65rem 0.9rem calc(1.5rem + env(safe-area-inset-bottom, 0px));
     transform: translateY(105%);
     transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
     z-index: 50;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(68px, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.5rem;
     align-content: flex-start;
     overflow-y: auto;
@@ -2017,17 +2156,59 @@ body, html {
     height: 4px;
     background: rgba(255, 255, 255, 0.3);
     border-radius: 2px;
-    margin: 0 auto 0.5rem auto;
+    margin: 0 auto 0.35rem auto;
     flex-shrink: 0;
+  }
+
+  .mobile-drawer-topbar {
+    display: flex !important;
+    grid-column: 1 / -1;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.15rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .mobile-drawer-title-group {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .mobile-drawer-title {
+    font-family: var(--font-display);
+    font-size: 0.98rem;
+    font-weight: 700;
+    color: #ffffff;
+  }
+
+  .mobile-drawer-sub {
+    font-size: 0.70rem;
+    color: var(--text-muted);
+  }
+
+  .mobile-drawer-close {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    font-size: 1.25rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
   }
 
   .elevator-header {
     grid-column: 1 / -1;
     text-align: left;
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     font-weight: 700;
     color: var(--primary-cyan);
-    margin-top: 0.5rem;
+    margin-top: 0.55rem;
     padding-bottom: 0.25rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   }
@@ -2038,37 +2219,69 @@ body, html {
 
   .elevator-btn {
     width: 100%;
-    min-height: 44px;
+    min-height: 48px;
     height: auto;
-    border-radius: var(--radius-md);
-    font-size: 0.82rem;
+    padding: 0.45rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.72rem;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    text-align: left;
+    outline: none;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--primary-cyan);
   }
 
+  .elevator-btn.active {
+    color: #ffffff;
+  }
+
+  /* Reveal readable place name inside each directory card on mobile */
   .elevator-tooltip {
-    display: none !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+    position: static !important;
+    transform: none !important;
+    opacity: 1 !important;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    font-family: var(--font-main) !important;
+    font-size: 0.72rem !important;
+    font-weight: 600 !important;
+    color: #e2e8f0 !important;
+    white-space: normal !important;
+    line-height: 1.25 !important;
+    pointer-events: none !important;
+    z-index: 1 !important;
   }
 
-  /* 7. STREET VIEW ARROWS & HOTSPOT LABELS */
+  /* 7. GOOGLE STREET VIEW ARROWS & CLEAN READABLE HOTSPOT PILLS */
   .hotspot-label {
     display: flex !important;
     flex-direction: column !important;
     position: absolute !important;
-    top: 36px !important;
+    top: 38px !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
-    padding: 0.25rem 0.65rem !important;
-    font-size: 0.72rem !important;
+    padding: 4px 10px !important;
     backdrop-filter: blur(14px) !important;
     -webkit-backdrop-filter: blur(14px) !important;
-    background: rgba(10, 15, 29, 0.90) !important;
+    background: rgba(10, 15, 29, 0.88) !important;
     border: 1px solid rgba(255, 255, 255, 0.22) !important;
-    border-radius: 9999px !important;
-    white-space: nowrap !important;
-    max-width: 175px !important;
+    border-radius: 12px !important;
+    white-space: normal !important;
+    width: max-content !important;
+    max-width: 195px !important;
     text-align: center !important;
     align-items: center !important;
     overflow: hidden !important;
-    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.55) !important;
     pointer-events: none !important;
   }
 
@@ -2076,34 +2289,31 @@ body, html {
   .hotspot-label div > div {
     font-size: 0.72rem !important;
     font-weight: 600 !important;
+    line-height: 1.25 !important;
     color: #ffffff !important;
-    white-space: nowrap !important;
+    white-space: normal !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
     overflow: hidden !important;
-    text-overflow: ellipsis !important;
     max-width: 100% !important;
     text-align: center !important;
   }
 
+  /* Hide truncated uppercase subtitles on mobile for unobstructed Street View clarity */
   .hotspot-label span,
   .hotspot-label .hotspot-sub {
-    font-size: 0.60rem !important;
-    color: var(--primary-cyan) !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    letter-spacing: 0.02em !important;
-    max-width: 100% !important;
-    text-align: center !important;
+    display: none !important;
   }
 
   .streetview-arrow {
-    width: 32px;
-    height: 32px;
+    width: 34px;
+    height: 34px;
   }
 
   .streetview-arrow svg {
-    width: 16px;
-    height: 16px;
+    width: 17px;
+    height: 17px;
   }
 
   .hotspot-card {

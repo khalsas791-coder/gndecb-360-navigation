@@ -30,12 +30,32 @@ let loaderTimeout = null;
 let activeLoadToken = 0;
 
 // Three.js Core Variables
-let scene, camera, renderer, sphereMesh, textureLoader;
+let scene, camera, renderer, sphereMesh, textureLoader, panoramaMaterial;
 let isUserInteracting = false;
+let zoomHudTimer = null;
+
+/**
+ * Compute full zoom-out vertical FOV across all devices.
+ * On portrait mobile screens, computes wider vertical FOV so horizontal framing
+ * stays spacious (~76°+ horizontal instead of cramped ~40°), clamped safely at 118°.
+ */
 export function getSystemZoomOutFov() {
-  const isMobile = typeof window !== 'undefined' && (window.innerWidth <= 768 || window.innerHeight > window.innerWidth);
-  return isMobile ? 98 : 92;
+  if (typeof window === 'undefined') return 100;
+  const aspect = window.innerWidth / Math.max(1, window.innerHeight);
+  if (aspect < 1) {
+    const targetHfovRad = THREE.MathUtils.degToRad(76);
+    const computedVfov = THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(targetHfovRad / 2) / aspect));
+    return Math.round(Math.min(118, Math.max(106, computedVfov)));
+  }
+  return 100;
 }
+
+export function getMaxZoomOutFov() {
+  if (typeof window === 'undefined') return 114;
+  return window.innerWidth <= 768 || window.innerHeight > window.innerWidth ? 124 : 114;
+}
+
+const MIN_ZOOM_IN_FOV = 28;
 
 let onPointerDownMouseX = 0, onPointerDownMouseY = 0;
 let lon = 180, onPointerDownLon = 180;
@@ -567,14 +587,18 @@ function initApp() {
     <div class="ui-overlay">
       <!-- Top Header Navbar -->
       <header class="header-nav">
-        <!-- Google Maps Mobile Capsule (visible on mobile only) -->
+        <!-- Google Maps Mobile Back + Search Capsule (visible on mobile only) -->
+        <button id="mobile-btn-back" class="mobile-capsule-back" type="button" title="Return to College Portal Homepage" aria-label="Back to College Portal">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+
         <div class="header-search-capsule" id="header-search-capsule" role="button" tabindex="0" title="Tap to search any campus facility">
           <div class="capsule-icon">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           </div>
           <div class="capsule-text">
             <span class="capsule-title" id="mobile-scene-title">Campus 2nd Gate</span>
-            <span class="capsule-sub" id="mobile-scene-sub">Campus 360° • Tap to search</span>
+            <span class="capsule-sub" id="mobile-scene-sub">Search 135+ views...</span>
           </div>
         </div>
 
@@ -617,12 +641,6 @@ function initApp() {
             <span class="portal-btn-label">College Portal</span>
           </button>
 
-          <!-- Mobile Micro Mode Switcher (visible on mobile only) -->
-          <div class="experience-switcher-micro" id="mobile-mode-switcher">
-            <button type="button" class="exp-micro-btn ${currentSection === 'campus' ? 'active' : ''}" data-mode="campus" title="Switch to Campus 360°">🏛️</button>
-            <button type="button" class="exp-micro-btn ${currentSection === 'hostel' ? 'active' : ''}" data-mode="hostel" title="Switch to Hostel 360°">🏠</button>
-          </div>
-
           <button id="btn-search-trigger" class="btn-search" title="Search all locations [Ctrl+K]">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             <span>Search</span>
@@ -643,8 +661,8 @@ function initApp() {
             <span>Book Visit</span>
           </button>
 
-          <!-- Mobile Quick Drawer & Menu Buttons -->
-          <button id="btn-mobile-drawer" class="icon-btn mobile-only-btn" title="Locations & Floors Directory">
+          <!-- Mobile Quick Drawer Button -->
+          <button id="btn-mobile-drawer" class="icon-btn mobile-only-btn" title="Locations & Floors Directory" aria-label="Locations & Floors Directory">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>
             <span class="dock-tooltip">Directory & Floors</span>
           </button>
@@ -656,23 +674,65 @@ function initApp() {
         </div>
       </header>
 
-      <!-- Google Maps Vertical Level / Floor Selector (Mobile only) -->
-      <div class="mobile-floor-picker" id="mobile-floor-picker" aria-label="Floor Level Selector"></div>
+      <!-- Google Maps Mobile Horizontal Action/Filter Chips (Mobile only) -->
+      <div class="mobile-chips-bar" id="mobile-chips-bar" role="toolbar" aria-label="Campus & View Controls">
+        <button type="button" class="gmap-chip exp-micro-btn ${currentSection === 'campus' ? 'active campus' : ''}" data-mode="campus">
+          <span>🏛️ Campus 360°</span>
+        </button>
+        <button type="button" class="gmap-chip exp-micro-btn ${currentSection === 'hostel' ? 'active hostel' : ''}" data-mode="hostel">
+          <span>🏠 Hostel 360°</span>
+        </button>
+        <button type="button" class="gmap-chip" id="chip-toggle-minimap" title="Toggle 2D Campus Map">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+          <span>Map</span>
+        </button>
+        <button type="button" class="gmap-chip" id="chip-toggle-audio" title="Toggle Ambient Sound">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+          <span>Audio</span>
+        </button>
+        <button type="button" class="gmap-chip" id="chip-snapshot" title="Save HD 360° Snapshot">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          <span>Snap</span>
+        </button>
+        <button type="button" class="gmap-chip" id="chip-help" title="Navigation Guide">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <span>Guide</span>
+        </button>
+      </div>
 
-      <!-- Google Maps Mobile Zoom Controls (Mobile only) -->
-      <div class="mobile-zoom-controls" id="mobile-zoom-controls" aria-label="Zoom In and Out">
-        <button type="button" class="mobile-zoom-btn" id="mobile-btn-zoom-in" title="Zoom In (+)">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <!-- Transient Zoom Level HUD Badge -->
+      <div class="zoom-hud-pill" id="zoom-hud-pill" aria-live="polite">1.0× Wide</div>
+
+      <!-- Google Maps Unified Right Floating Controls Rail (Mobile only, zero collision) -->
+      <div class="mobile-right-rail" id="mobile-right-rail">
+        <button type="button" class="mobile-compass-fab" id="mobile-btn-compass" title="Align to True North & Level Horizon" aria-label="Align to True North">
+          <div class="mini-compass-icon" id="mini-compass-dial">
+            <div class="mini-compass-needle"></div>
+          </div>
         </button>
-        <div class="mobile-zoom-divider"></div>
-        <button type="button" class="mobile-zoom-btn" id="mobile-btn-zoom-out" title="Zoom Out (−)">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        </button>
+
+        <!-- Vertical Level / Floor Selector -->
+        <div class="mobile-floor-picker" id="mobile-floor-picker" aria-label="Floor Level Selector"></div>
+
+        <!-- Mobile Zoom In / Zoom Out / Full Zoom Out Pill -->
+        <div class="mobile-zoom-controls" id="mobile-zoom-controls" aria-label="Zoom In and Out">
+          <button type="button" class="mobile-zoom-btn" id="mobile-btn-zoom-in" title="Zoom In (+)" aria-label="Zoom In">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+          <div class="mobile-zoom-divider"></div>
+          <button type="button" class="mobile-zoom-btn" id="mobile-btn-zoom-out" title="Zoom Out (−)" aria-label="Zoom Out">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+          <div class="mobile-zoom-divider"></div>
+          <button type="button" class="mobile-zoom-btn reset-fit" id="mobile-btn-zoom-reset" title="Full Zoom Out View" aria-label="Full Zoom Out View">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+          </button>
+        </div>
       </div>
 
       <!-- Google Maps Bottom Place Sheet (Mobile only) -->
       <div class="mobile-place-sheet" id="mobile-place-sheet">
-        <div class="place-sheet-handle"></div>
+        <div class="place-sheet-handle" id="place-sheet-handle"></div>
         <div class="place-sheet-main">
           <div class="place-sheet-info" id="place-sheet-info" role="button" tabindex="0">
             <div class="place-sheet-title-row">
@@ -683,17 +743,18 @@ function initApp() {
           </div>
           <div class="place-sheet-actions">
             <button type="button" class="sheet-action-pill primary" id="sheet-btn-explore" title="Open All Locations">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>
-              <span>Explore</span>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>
+              <span>Places</span>
             </button>
             <button type="button" class="sheet-action-pill" id="sheet-btn-search" title="Search Campus">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
               <span>Search</span>
             </button>
+            <button type="button" class="sheet-action-pill" id="sheet-btn-fullview" title="Reset to Full Zoom Out & Level View">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+              <span>Full View</span>
+            </button>
             <button type="button" class="sheet-action-pill compass-pill" id="sheet-btn-north" title="Reorient to True North">
-              <div class="mini-compass-icon" id="mini-compass-dial">
-                <div class="mini-compass-needle"></div>
-              </div>
               <span id="sheet-heading-label">180° S</span>
             </button>
           </div>
@@ -1007,6 +1068,108 @@ function initApp() {
 // ============================================================================
 // THREE.JS EQUIRECTANGULAR 360 VIEWER
 // ============================================================================
+function getOptimalPixelRatio() {
+  const dpr = typeof window !== 'undefined' ? (window.devicePixelRatio || 1) : 1;
+  // Native crisp Retina up to 3.0x on phones, and 1.75x supersampling on 1x displays/emulators
+  return dpr >= 1.5 ? Math.min(dpr, 3.0) : Math.min(2.0, dpr * 1.75);
+}
+
+function createPanoramaMaterial() {
+  const dummyTex = new THREE.DataTexture(new Uint8Array([10, 15, 29, 255]), 1, 1);
+  dummyTex.needsUpdate = true;
+
+  return new THREE.ShaderMaterial({
+    uniforms: {
+      uMap: { value: dummyTex },
+      uHasMap: { value: 0.0 },
+      uFallbackColor: { value: new THREE.Color(0x0a0f1d) },
+      uTexelSize: { value: new THREE.Vector2(1 / 4096, 1 / 2048) },
+      uLodBias: { value: -0.65 },
+      uSharpness: { value: 0.44 },
+      uFov: { value: fov }
+    },
+    vertexShader: `
+      varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform sampler2D uMap;
+      uniform float uHasMap;
+      uniform vec3 uFallbackColor;
+      uniform vec2 uTexelSize;
+      uniform float uLodBias;
+      uniform float uSharpness;
+      uniform float uFov;
+      varying vec2 vUv;
+
+      float getLuma(vec3 c) {
+        return dot(c, vec3(0.2126, 0.7152, 0.0722));
+      }
+
+      void main() {
+        if (uHasMap < 0.5) {
+          gl_FragColor = vec4(uFallbackColor, 1.0);
+          return;
+        }
+
+        // Scale adaptive sharpen kernel cleanly across zoomed-out and zoomed-in FOVs
+        float scale = clamp(uFov / 55.0, 0.85, 2.25);
+        vec2 stepUv = uTexelSize * scale;
+
+        vec3 c = texture2D(uMap, vUv, uLodBias).rgb;
+        vec3 n = texture2D(uMap, vec2(vUv.x, clamp(vUv.y - stepUv.y, 0.001, 0.999)), uLodBias).rgb;
+        vec3 s = texture2D(uMap, vec2(vUv.x, clamp(vUv.y + stepUv.y, 0.001, 0.999)), uLodBias).rgb;
+        vec3 w = texture2D(uMap, vec2(vUv.x - stepUv.x, vUv.y), uLodBias).rgb;
+        vec3 e = texture2D(uMap, vec2(vUv.x + stepUv.x, vUv.y), uLodBias).rgb;
+
+        vec3 minRGB = min(c, min(min(n, s), min(w, e)));
+        vec3 maxRGB = max(c, max(max(n, s), max(w, e)));
+
+        // Halo-clamped FidelityFX CAS-inspired edge crispness
+        vec3 blur = (n + s + w + e) * 0.25;
+        vec3 detail = c - blur;
+        float contrast = getLuma(maxRGB - minRGB);
+        float weight = uSharpness * clamp(1.0 - contrast * 1.15, 0.16, 1.0);
+
+        vec3 crisp = clamp(c + detail * (weight * 2.2), minRGB * 0.96, maxRGB * 1.04);
+
+        // Clean Google Street View style micro-vibrance boost (subtle, zero oversaturation)
+        float lum = getLuma(crisp);
+        crisp = clamp(mix(vec3(lum), crisp, 1.05), 0.0, 1.0);
+
+        gl_FragColor = vec4(crisp, 1.0);
+        #include <colorspace_fragment>
+      }
+    `
+  });
+}
+
+function setTargetFov(nextFov, showHud = true) {
+  const maxFov = getMaxZoomOutFov();
+  targetFov = Math.max(MIN_ZOOM_IN_FOV, Math.min(maxFov, nextFov));
+  if (!showHud) return;
+
+  const hud = document.getElementById('zoom-hud-pill');
+  if (!hud) return;
+
+  const fullFov = getSystemZoomOutFov();
+  const ratio = fullFov / targetFov;
+  if (targetFov >= fullFov - 2) {
+    hud.textContent = `Full View • ${Math.round(targetFov)}°`;
+  } else {
+    hud.textContent = `${ratio.toFixed(1)}× Zoom`;
+  }
+
+  hud.classList.add('visible');
+  if (zoomHudTimer) clearTimeout(zoomHudTimer);
+  zoomHudTimer = setTimeout(() => {
+    hud.classList.remove('visible');
+  }, 1300);
+}
+
 function initThreeViewer() {
   const canvas = document.getElementById('webgl-canvas');
   if (!canvas) return;
@@ -1021,19 +1184,19 @@ function initThreeViewer() {
 
   textureLoader = new THREE.TextureLoader();
 
-  // Create base material with default white color and no tone-mapping compression
-  const material = new THREE.MeshBasicMaterial({ color: 0xffffff, toneMapped: false });
-  sphereMesh = new THREE.Mesh(geometry, material);
+  // Google Street View sharpness shader: trilinear mipmaps + negative LOD bias + CAS sharpening
+  panoramaMaterial = createPanoramaMaterial();
+  sphereMesh = new THREE.Mesh(geometry, panoramaMaterial);
   scene.add(sphereMesh);
 
-  // WebGL Renderer configured for high-performance and sharp native display pixel ratio
+  // WebGL Renderer configured for high-performance and crisp Retina/supersampled pixel ratio
   renderer = new THREE.WebGLRenderer({
     canvas: canvas,
     antialias: true,
     powerPreference: 'high-performance',
     preserveDrawingBuffer: true
   });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 3.0));
+  renderer.setPixelRatio(getOptimalPixelRatio());
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.NoToneMapping;
@@ -1101,8 +1264,18 @@ function renderSidePanel() {
   const container = document.getElementById('side-navigation-panel');
   if (!container) return;
 
+  const mobileTopbar = `
+    <div class="mobile-drawer-topbar">
+      <div class="mobile-drawer-title-group">
+        <span class="mobile-drawer-title">${currentSection === 'campus' ? '🏛️ Campus Locations' : '🏠 Locations & Floors'}</span>
+        <span class="mobile-drawer-sub">Tap any destination to jump in 360°</span>
+      </div>
+      <button type="button" class="mobile-drawer-close" data-action="close-drawer" aria-label="Close Directory">&times;</button>
+    </div>
+  `;
+
   if (currentSection === 'hostel') {
-    container.innerHTML = `
+    container.innerHTML = mobileTopbar + `
       <div class="elevator-header">Gates & Perimeter</div>
       <button class="elevator-btn ${['way_to_canteen', 'canteen', 'way_to_main_campus', 'way_to_main_campus_2', 'main_campus_lane'].includes(currentSceneId) ? 'active' : ''}" data-scene="canteen">
         CAN<span class="elevator-tooltip">Old Canteen & Main Campus Lane</span>
@@ -1198,7 +1371,7 @@ function renderSidePanel() {
     `;
   } else {
     // Campus Directory Panel
-    container.innerHTML = `
+    container.innerHTML = mobileTopbar + `
       <div class="elevator-header">Campus</div>
       <button class="elevator-btn campus-btn ${currentSceneId === 'campus_main_gate' ? 'active' : ''}" data-scene="campus_main_gate">
         MG<span class="elevator-tooltip">College Main Gate</span>
@@ -1298,12 +1471,18 @@ function reorientToNorth() {
   const destLon = norm > 180 ? 360 : 0;
   targetLon = lon + (destLon - norm);
   targetLat = 0;
-  showToast('🧭 Reoriented to True North (0° N)');
+  showToast('🧭 Aligned to True North (0° N)');
+}
+
+function resetToFullView() {
+  const fullFov = getSystemZoomOutFov();
+  targetLat = 0;
+  setTargetFov(fullFov, true);
 }
 
 /**
  * High-Performance Asynchronous Texture Loader with Memory Caching
- * Optimized for maximum photo sphere quality: mipmaps enabled, linear mipmap filtering, anisotropy = 16
+ * Paired with custom CAS + LOD-bias GLSL shader for Google Street View zero-blur clarity
  */
 function getOrLoadTexture(url) {
   if (textureCache.has(url)) {
@@ -1318,15 +1497,14 @@ function getOrLoadTexture(url) {
       url,
       (texture) => {
         texture.colorSpace = THREE.SRGBColorSpace;
-        // ULTRA-HD MAXIMUM CLARITY (Google Street View standard):
-        // Disable mipmap downsampling so textures are NEVER blurred by lower mip levels
-        texture.generateMipmaps = false;
-        texture.minFilter = THREE.LinearFilter;
+        // Trilinear mipmaps + max anisotropy + GLSL negative LOD bias & CAS sharpen = zero shimmer + zero blur
+        texture.generateMipmaps = true;
+        texture.minFilter = THREE.LinearMipmapLinearFilter;
         texture.magFilter = THREE.LinearFilter;
-        // Maximum hardware anisotropic filtering to keep edges razor-sharp
         const maxAniso = renderer ? renderer.capabilities.getMaxAnisotropy() : 16;
-        texture.anisotropy = maxAniso || 16;
-        texture.wrapS = THREE.ClampToEdgeWrapping;
+        texture.anisotropy = Math.min(16, maxAniso || 16);
+        // Equirectangular wraps seamlessly across 360° horizontally
+        texture.wrapS = THREE.RepeatWrapping;
         texture.wrapT = THREE.ClampToEdgeWrapping;
         texture.needsUpdate = true;
 
@@ -1381,9 +1559,16 @@ function preloadNeighbors(viewpoint) {
  * Automatically aligns camera yaw and pitch down the pathway
  */
 function applySceneTexture(texture, viewpoint, arrivalHeading = null) {
-  sphereMesh.material.color.setHex(0xffffff);
-  sphereMesh.material.map = texture;
-  sphereMesh.material.needsUpdate = true;
+  if (panoramaMaterial && panoramaMaterial.uniforms) {
+    const maxTex = renderer ? renderer.capabilities.maxTextureSize : 8192;
+    const rawW = texture.image?.width || 4096;
+    const rawH = texture.image?.height || 2048;
+    const gpuW = Math.min(rawW, maxTex);
+    const gpuH = Math.min(rawH, maxTex);
+    panoramaMaterial.uniforms.uMap.value = texture;
+    panoramaMaterial.uniforms.uHasMap.value = 1.0;
+    panoramaMaterial.uniforms.uTexelSize.value.set(1 / gpuW, 1 / gpuH);
+  }
   
   // Floor/building transitions: automatically points camera straight down the path
   let newLon = 180;
@@ -1454,7 +1639,7 @@ export function loadScene(sceneId, arrivalHeading = null) {
   const mobileSceneSub = document.getElementById('mobile-scene-sub');
   if (mobileSceneSub) {
     const floorInfo = targetViewpoint.floorLabel || (currentSection === 'campus' ? 'Campus 360°' : 'Hostel 360°');
-    mobileSceneSub.textContent = `${floorInfo} • Tap to search`;
+    mobileSceneSub.textContent = `${floorInfo} • Search 135+ views`;
   }
 
   // Update Google Maps mobile floor selector and bottom sheet
@@ -1564,9 +1749,9 @@ export function loadScene(sceneId, arrivalHeading = null) {
       loaderCurtain.classList.remove('active');
     }
     if (webglCanvas) webglCanvas.classList.add('blurred');
-    sphereMesh.material.map = null;
-    sphereMesh.material.color.setHex(0x0a0f1d);
-    sphereMesh.material.needsUpdate = true;
+    if (panoramaMaterial && panoramaMaterial.uniforms) {
+      panoramaMaterial.uniforms.uHasMap.value = 0.0;
+    }
     if (pendingOverlay) {
       pendingOverlay.classList.add('active');
       document.getElementById('pending-title').textContent = targetViewpoint.name;
@@ -1781,7 +1966,7 @@ function onPointerMove(event) {
     const currentDist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
     if (initialPinchDistance > 10 && currentDist > 10) {
       const pinchRatio = initialPinchDistance / currentDist;
-      targetFov = Math.max(35, Math.min(108, pinchStartFov * pinchRatio));
+      setTargetFov(pinchStartFov * pinchRatio, true);
     }
   }
 }
@@ -1816,7 +2001,7 @@ function onPointerUp(event) {
 
 function onDocumentMouseWheel(event) {
   event.preventDefault();
-  targetFov = Math.max(35, Math.min(108, targetFov + event.deltaY * 0.05));
+  setTargetFov(targetFov + event.deltaY * 0.05, true);
 }
 
 function onWindowResize() {
@@ -1827,7 +2012,7 @@ function onWindowResize() {
   }
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 3.0));
+  renderer.setPixelRatio(getOptimalPixelRatio());
   renderHotspots();
 }
 
@@ -1868,6 +2053,9 @@ function animate() {
 
   camera.fov = fov;
   camera.updateProjectionMatrix();
+  if (panoramaMaterial && panoramaMaterial.uniforms) {
+    panoramaMaterial.uniforms.uFov.value = fov;
+  }
 
   const phi = THREE.MathUtils.degToRad(90 - lat);
   const theta = THREE.MathUtils.degToRad(lon);
@@ -1932,11 +2120,16 @@ function updateMinimapPin() {
 // AUDIO, SNAPSHOT, SEARCH & MODAL HELPERS
 // ============================================================================
 function updateAudioIcon() {
+  const muted = isSoundMuted();
   const container = document.getElementById('audio-icon');
   if (container) {
-    container.innerHTML = isSoundMuted()
+    container.innerHTML = muted
       ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>`
       : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>`;
+  }
+  const chipAudio = document.getElementById('chip-toggle-audio');
+  if (chipAudio) {
+    chipAudio.classList.toggle('active', !muted);
   }
 }
 
@@ -2165,6 +2358,13 @@ function setupEventListeners() {
     handleSearchInput(e.target.value);
   });
 
+  // Mobile Drawer Close Button inside Directory Sheet
+  mobileDrawer?.addEventListener('click', (e) => {
+    if (e.target.closest('[data-action="close-drawer"]')) {
+      closeMobileDrawer();
+    }
+  });
+
   // Mobile Bottom Place Sheet actions
   document.getElementById('sheet-btn-explore')?.addEventListener('click', () => {
     const willOpen = !mobileDrawer?.classList.contains('mobile-open');
@@ -2178,11 +2378,17 @@ function setupEventListeners() {
     mobileBackdrop?.classList.toggle('active', willOpen);
   });
 
-  // Google Maps Style Recenter & True North animation
+  // Google Maps Style Recenter, Full View & True North animation
   document.querySelector('.compass-widget')?.addEventListener('click', reorientToNorth);
   document.getElementById('sheet-btn-north')?.addEventListener('click', reorientToNorth);
+  document.getElementById('mobile-btn-compass')?.addEventListener('click', reorientToNorth);
+  document.getElementById('sheet-btn-fullview')?.addEventListener('click', resetToFullView);
+  document.getElementById('mobile-btn-zoom-reset')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    resetToFullView();
+  });
 
-  // Mobile micro mode switcher
+  // Google Maps horizontal filter chips (Campus/Hostel switch, Minimap, Audio, Snap, Guide)
   document.querySelectorAll('.exp-micro-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const mode = e.currentTarget.dataset.mode;
@@ -2191,6 +2397,24 @@ function setupEventListeners() {
       }
     });
   });
+
+  document.getElementById('chip-toggle-minimap')?.addEventListener('click', (e) => {
+    const minimap = document.getElementById('minimap-floating-card');
+    if (minimap) {
+      const shown = minimap.classList.toggle('mobile-visible');
+      e.currentTarget.classList.toggle('active', shown);
+    }
+  });
+
+  document.getElementById('chip-toggle-audio')?.addEventListener('click', () => {
+    toggleAudioAmbiance((isPlaying) => {
+      showToast(isPlaying ? 'Ambient Soundscape Playing' : 'Audio Muted');
+      updateAudioIcon();
+    });
+  });
+
+  document.getElementById('chip-snapshot')?.addEventListener('click', captureSnapshot);
+  document.getElementById('chip-help')?.addEventListener('click', () => showModal('modal-help'));
 
   // Mobile floor picker tap delegation
   document.getElementById('mobile-floor-picker')?.addEventListener('click', (e) => {
@@ -2208,12 +2432,10 @@ function setupEventListeners() {
       const now = performance.now();
       if (now - lastCanvasTapTime < 320) {
         const fullZoomOut = getSystemZoomOutFov();
-        if (Math.abs(targetFov - fullZoomOut) < 8) {
-          targetFov = 50;
-          showToast('🔍 Zoomed In');
+        if (Math.abs(targetFov - fullZoomOut) < 10) {
+          setTargetFov(52, true);
         } else {
-          targetFov = fullZoomOut;
-          showToast('🔍 Full Zoom Out');
+          setTargetFov(fullZoomOut, true);
         }
       }
       lastCanvasTapTime = now;
@@ -2228,23 +2450,50 @@ function setupEventListeners() {
   });
 
   document.getElementById('btn-zoom-in')?.addEventListener('click', () => {
-    targetFov = Math.max(35, targetFov - 10);
+    setTargetFov(targetFov * 0.75, true);
   });
 
   document.getElementById('btn-zoom-out')?.addEventListener('click', () => {
-    targetFov = Math.min(108, targetFov + 10);
+    setTargetFov(targetFov * 1.33, true);
   });
 
-  // Mobile Zoom In & Out Floating Buttons
-  document.getElementById('mobile-btn-zoom-in')?.addEventListener('click', (e) => {
-    e.stopPropagation();
-    targetFov = Math.max(35, targetFov - 12);
-  });
+  // Mobile Zoom In & Out Floating Buttons (responsive logarithmic tap + smooth hold)
+  const attachHoldZoom = (btnId, factor, holdDelta) => {
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
+    let holdTimer = null;
+    let holdInterval = null;
+    let heldLong = false;
 
-  document.getElementById('mobile-btn-zoom-out')?.addEventListener('click', (e) => {
-    e.stopPropagation();
-    targetFov = Math.min(108, targetFov + 12);
-  });
+    const clearHold = () => {
+      if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
+      if (holdInterval) { clearInterval(holdInterval); holdInterval = null; }
+    };
+
+    btn.addEventListener('pointerdown', (e) => {
+      e.stopPropagation();
+      heldLong = false;
+      holdTimer = setTimeout(() => {
+        heldLong = true;
+        holdInterval = setInterval(() => {
+          setTargetFov(targetFov + holdDelta, true);
+        }, 65);
+      }, 360);
+    });
+
+    btn.addEventListener('pointerup', clearHold);
+    btn.addEventListener('pointercancel', clearHold);
+    btn.addEventListener('pointerleave', clearHold);
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (!heldLong) {
+        setTargetFov(targetFov * factor, true);
+      }
+    });
+  };
+
+  attachHoldZoom('mobile-btn-zoom-in', 0.72, -5.5);
+  attachHoldZoom('mobile-btn-zoom-out', 1.38, 5.5);
 
   document.getElementById('btn-snapshot')?.addEventListener('click', captureSnapshot);
 
@@ -2305,8 +2554,8 @@ function setupEventListeners() {
     if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') targetLon += 12;
     if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') targetLat += 8;
     if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') targetLat -= 8;
-    if (e.key === '+' || e.key === '=') targetFov = Math.max(35, targetFov - 5);
-    if (e.key === '-') targetFov = Math.min(108, targetFov + 5);
+    if (e.key === '+' || e.key === '=') setTargetFov(targetFov - 6, true);
+    if (e.key === '-') setTargetFov(targetFov + 6, true);
 
     // Number keys for section switch
     if (e.key === '1' && !e.target.matches('input, select, textarea')) setExperienceSection('campus');
@@ -2339,6 +2588,10 @@ function openTourViewer(targetSceneId = null, section = null) {
   if (targetSceneId && targetSceneId !== currentSceneId) {
     loadScene(targetSceneId);
   }
+
+  // Always start in crisp full zoom-out view across mobile and desktop
+  targetFov = getSystemZoomOutFov();
+  fov = targetFov;
 
   // Trigger resize to ensure WebGL canvas matches viewport
   onWindowResize();
@@ -2395,8 +2648,12 @@ function setupPortalEventListeners() {
     openTourViewer();
   });
 
-  // Return to portal button in 360 tour header
+  // Return to portal button in 360 tour header (desktop & mobile back button)
   document.getElementById('btn-return-portal')?.addEventListener('click', () => openLandingPortal());
+  document.getElementById('mobile-btn-back')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    openLandingPortal();
+  });
 
   // Brand Logo click in tour header returns to starting portal
   document.getElementById('btn-brand-home')?.addEventListener('click', () => openLandingPortal());
