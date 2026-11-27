@@ -32,11 +32,16 @@ let activeLoadToken = 0;
 // Three.js Core Variables
 let scene, camera, renderer, sphereMesh, textureLoader;
 let isUserInteracting = false;
+export function getSystemZoomOutFov() {
+  const isMobile = typeof window !== 'undefined' && (window.innerWidth <= 768 || window.innerHeight > window.innerWidth);
+  return isMobile ? 98 : 92;
+}
+
 let onPointerDownMouseX = 0, onPointerDownMouseY = 0;
 let lon = 180, onPointerDownLon = 180;
 let lat = 0, onPointerDownLat = 0;
 let targetLon = 180, targetLat = 0;
-let fov = 75, targetFov = 75;
+let fov = getSystemZoomOutFov(), targetFov = getSystemZoomOutFov();
 
 // Touch, Multi-Touch Pinch-to-Zoom & Inertia/Momentum Tracking (Google Maps Style)
 const activePointers = new Map();
@@ -44,7 +49,7 @@ let lastPointerX = 0, lastPointerY = 0;
 let lastPointerTime = 0;
 let velocityLon = 0, velocityLat = 0;
 let initialPinchDistance = null;
-let pinchStartFov = 75;
+let pinchStartFov = getSystemZoomOutFov();
 
 // Run initial system diagnostic
 runFullDiagnostic();
@@ -1421,6 +1426,7 @@ export function loadScene(sceneId, arrivalHeading = null) {
   }
 
   currentSceneId = sceneId;
+  targetFov = getSystemZoomOutFov();
   if (currentSection === 'campus') {
     lastVisitedCampusScene = sceneId;
   } else {
@@ -1764,7 +1770,7 @@ function onPointerMove(event) {
     const currentDist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
     if (initialPinchDistance > 10 && currentDist > 10) {
       const pinchRatio = initialPinchDistance / currentDist;
-      targetFov = Math.max(35, Math.min(100, pinchStartFov * pinchRatio));
+      targetFov = Math.max(35, Math.min(108, pinchStartFov * pinchRatio));
     }
   }
 }
@@ -1799,15 +1805,19 @@ function onPointerUp(event) {
 
 function onDocumentMouseWheel(event) {
   event.preventDefault();
-  targetFov = Math.max(35, Math.min(100, targetFov + event.deltaY * 0.05));
+  targetFov = Math.max(35, Math.min(108, targetFov + event.deltaY * 0.05));
 }
 
 function onWindowResize() {
   if (!camera || !renderer) return;
   camera.aspect = window.innerWidth / window.innerHeight;
+  if (targetFov >= 85) {
+    targetFov = getSystemZoomOutFov();
+  }
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.5));
+  renderHotspots();
 }
 
 function animate() {
@@ -2186,12 +2196,13 @@ function setupEventListeners() {
     if (e.pointerType === 'touch') {
       const now = performance.now();
       if (now - lastCanvasTapTime < 320) {
-        if (Math.abs(targetFov - 75) < 8) {
-          targetFov = 45;
+        const fullZoomOut = getSystemZoomOutFov();
+        if (Math.abs(targetFov - fullZoomOut) < 8) {
+          targetFov = 50;
           showToast('🔍 Zoomed In');
         } else {
-          targetFov = 75;
-          showToast('🔍 Zoom Reset');
+          targetFov = fullZoomOut;
+          showToast('🔍 Full Zoom Out');
         }
       }
       lastCanvasTapTime = now;
@@ -2210,7 +2221,7 @@ function setupEventListeners() {
   });
 
   document.getElementById('btn-zoom-out')?.addEventListener('click', () => {
-    targetFov = Math.min(100, targetFov + 10);
+    targetFov = Math.min(108, targetFov + 10);
   });
 
   document.getElementById('btn-snapshot')?.addEventListener('click', captureSnapshot);
@@ -2273,7 +2284,7 @@ function setupEventListeners() {
     if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') targetLat += 8;
     if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') targetLat -= 8;
     if (e.key === '+' || e.key === '=') targetFov = Math.max(35, targetFov - 5);
-    if (e.key === '-') targetFov = Math.min(100, targetFov + 5);
+    if (e.key === '-') targetFov = Math.min(108, targetFov + 5);
 
     // Number keys for section switch
     if (e.key === '1' && !e.target.matches('input, select, textarea')) setExperienceSection('campus');
